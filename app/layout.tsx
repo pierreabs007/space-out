@@ -8,9 +8,9 @@ export const metadata: Metadata = {
   title: 'Solar System Viewer',
   description: 'Interactive 3D solar system simulation built with Next.js and React Three Fiber',
   icons: {
-    icon: '/saturn-favicon.svg',
-    shortcut: '/saturn-favicon.svg',
-    apple: '/saturn-favicon.svg',
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
   },
 }
 
