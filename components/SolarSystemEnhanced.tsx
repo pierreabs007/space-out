@@ -1525,7 +1525,7 @@ function SolarSystemEnhanced() {
   const [cameraVerticalMax, setCameraVerticalMax] = useState(60) // Default upper bound 60°
   const [hoveredObject, setHoveredObject] = useState<any>(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [controlsVisible, setControlsVisible] = useState(true)
+  const [controlsVisible, setControlsVisible] = useState(false)
   const [controlsPinned, setControlsPinned] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
 
