@@ -41,9 +41,9 @@ export default function Scene(props: SceneProps) {
       <pointLight position={[0, 0, 0]} intensity={2} decay={0.5} />
 
       {/* Background - Temporarily disabled to test */}
-      {false && <BackdropStars count={5000} />}
-      {false && <Galaxy position={[-2000, 500, -1000]} />}
-      {false && <Galaxy position={[1500, -400, -1200]} />}
+      {/* {false && <BackdropStars count={5000} />} */}
+      {/* {false && <Galaxy position={[-2000, 500, -1000]} />} */}
+      {/* {false && <Galaxy position={[1500, -400, -1200]} />} */}
 
       {/* Reference Grid - Temporarily disabled to test */}
       {false && props.showGrid && (
@@ -72,16 +72,16 @@ export default function Scene(props: SceneProps) {
         })}
 
         {/* Asteroid Belt - Temporarily disabled to test */}
-        {false && props.showAsteroidBelt && (
+        {/* {false && props.showAsteroidBelt && (
           <AsteroidBelt 
             time={timeRef.current}
             count={5000}
           />
-        )}
+        )} */}
       </group>
 
       {/* Post-processing effects - Temporarily disabled to test */}
-      {false && (
+      {/* {false && (
         <EffectComposer multisampling={4}>
           <Bloom
             kernelSize={KernelSize.LARGE}
@@ -91,7 +91,7 @@ export default function Scene(props: SceneProps) {
             height={Resolution.AUTO_SIZE}
           />
         </EffectComposer>
-      )}
+      )} */}
     </>
   )
 }
