@@ -99,24 +99,24 @@ export default function Planet({ data, moons, time, showOrbit, showLabel }: Plan
         </mesh>
 
         {/* Saturn's Rings - Temporarily disabled */}
-        {false && data.hasRings && data.name === 'Saturn' && (
+        {/* {false && data.hasRings && data.name === 'Saturn' && (
           <SaturnRings planetRadius={radius} />
-        )}
+        )} */}
 
         {/* Planet Label - Temporarily disabled */}
-        {false && showLabel && (
+        {/* {false && showLabel && (
           <div>{data.name}</div>
-        )}
+        )} */}
 
         {/* Moons - Temporarily disabled */}
-        {false && moons.map((moon) => (
+        {/* {false && moons.map((moon) => (
           <Moon
             key={moon.name}
             data={moon}
             planetRadius={radius}
             time={time}
           />
-        ))}
+        ))} */}
       </group>
     </>
   )
