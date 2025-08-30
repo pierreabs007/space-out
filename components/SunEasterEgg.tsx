@@ -180,8 +180,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes simple-left-to-right {
-          0% { transform: translateX(0px); }
-          100% { transform: translateX(calc(100vw + 40px)); }
+          0% { transform: translateX(0px) translateY(-50%) scale(0.1); }
+          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.1); }
         }
         
         @keyframes easteregg-fadeout {
@@ -205,19 +205,17 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           height: '100vh'
         }}
       >
-        {/* Animated silhouette - USE SCALE TO FORCE SIZE */}
+        {/* Animated silhouette - SCALE IN ANIMATION */}
         <div
           ref={animationRef}
           style={{ 
             position: 'fixed',
-            width: '20px',
-            height: '20px',
-            left: '-25px', 
-            top: '300px', // Middle of screen for most displays
+            width: '50px',
+            height: '50px',
+            left: '-30px', 
+            top: '50%',
             zIndex: 9999,
-            animation: 'simple-left-to-right 7s linear forwards',
-            transform: 'scale(0.2)', // Force 20% size (VERY small)
-            transformOrigin: 'center'
+            animation: 'simple-left-to-right 7s linear forwards'
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
