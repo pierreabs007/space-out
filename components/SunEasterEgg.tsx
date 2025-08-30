@@ -86,14 +86,15 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     }
   }
 
-  // Typewriter effect for quote
-  const typewriterEffect = (text: string, delay: number = 50) => {
+  // Typewriter effect for quote - Fixed to prevent character corruption
+  const typewriterEffect = (text: string, delay: number = 80) => {
     setDisplayedQuote('')
     let index = 0
     
     const type = () => {
       if (index < text.length) {
-        setDisplayedQuote(prev => prev + text.charAt(index))
+        const char = text.charAt(index)
+        setDisplayedQuote(prevText => prevText + char)
         index++
         setTimeout(type, delay)
       }
@@ -123,6 +124,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         return 'animate-quick-wobble'
       case 'gentle floating up and down':
         return 'animate-gentle-float'
+      case 'bumpy up and down motion':
+        return 'animate-bumpy-motion'
       default:
         return 'animate-steady-glide'
     }
@@ -188,9 +191,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         
         @keyframes bobbing {
           0%, 100% { transform: translateX(-150px) translateY(0px); }
-          25% { transform: translateX(25vw) translateY(-20px); }
+          25% { transform: translateX(25vw) translateY(-8px); }
           50% { transform: translateX(50vw) translateY(0px); }
-          75% { transform: translateX(75vw) translateY(-15px); }
+          75% { transform: translateX(75vw) translateY(-6px); }
           100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
         }
         
@@ -211,45 +214,57 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         
         @keyframes wobble {
           0% { transform: translateX(-150px) translateY(0px); }
-          25% { transform: translateX(25vw) translateY(-10px); }
-          50% { transform: translateX(50vw) translateY(10px); }
-          75% { transform: translateX(75vw) translateY(-10px); }
+          25% { transform: translateX(25vw) translateY(-4px); }
+          50% { transform: translateX(50vw) translateY(4px); }
+          75% { transform: translateX(75vw) translateY(-4px); }
           100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
         }
         
         @keyframes vibration {
           0%, 100% { transform: translateX(-150px); }
-          10% { transform: translateX(-145px); }
-          20% { transform: translateX(-155px); }
-          30% { transform: translateX(-148px); }
-          40% { transform: translateX(-152px); }
+          10% { transform: translateX(-148px); }
+          20% { transform: translateX(-152px); }
+          30% { transform: translateX(-149px); }
+          40% { transform: translateX(-151px); }
           50% { transform: translateX(50vw); }
-          60% { transform: translateX(calc(50vw + 3px)); }
-          70% { transform: translateX(calc(50vw - 3px)); }
-          80% { transform: translateX(calc(50vw + 2px)); }
-          90% { transform: translateX(calc(50vw - 2px)); }
+          60% { transform: translateX(calc(50vw + 1px)); }
+          70% { transform: translateX(calc(50vw - 1px)); }
+          80% { transform: translateX(calc(50vw + 1px)); }
+          90% { transform: translateX(calc(50vw - 1px)); }
           100% { transform: translateX(calc(100vw + 150px)); }
         }
         
         @keyframes quick-wobble {
           0% { transform: translateX(-150px) translateY(0px); }
-          10% { transform: translateX(10vw) translateY(-15px); }
-          20% { transform: translateX(20vw) translateY(15px); }
-          30% { transform: translateX(30vw) translateY(-15px); }
-          40% { transform: translateX(40vw) translateY(15px); }
-          50% { transform: translateX(50vw) translateY(-15px); }
-          60% { transform: translateX(60vw) translateY(15px); }
-          70% { transform: translateX(70vw) translateY(-15px); }
-          80% { transform: translateX(80vw) translateY(15px); }
-          90% { transform: translateX(90vw) translateY(-15px); }
+          10% { transform: translateX(10vw) translateY(-5px); }
+          20% { transform: translateX(20vw) translateY(5px); }
+          30% { transform: translateX(30vw) translateY(-5px); }
+          40% { transform: translateX(40vw) translateY(5px); }
+          50% { transform: translateX(50vw) translateY(-5px); }
+          60% { transform: translateX(60vw) translateY(5px); }
+          70% { transform: translateX(70vw) translateY(-5px); }
+          80% { transform: translateX(80vw) translateY(5px); }
+          90% { transform: translateX(90vw) translateY(-5px); }
           100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
         }
         
         @keyframes gentle-float {
           0%, 100% { transform: translateX(-150px) translateY(0px); }
-          25% { transform: translateX(25vw) translateY(-25px); }
-          50% { transform: translateX(50vw) translateY(-10px); }
-          75% { transform: translateX(75vw) translateY(-30px); }
+          25% { transform: translateX(25vw) translateY(-8px); }
+          50% { transform: translateX(50vw) translateY(-3px); }
+          75% { transform: translateX(75vw) translateY(-10px); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
+        }
+        
+        @keyframes bumpy-motion {
+          0% { transform: translateX(-150px) translateY(0px); }
+          12.5% { transform: translateX(12.5vw) translateY(-6px); }
+          25% { transform: translateX(25vw) translateY(3px); }
+          37.5% { transform: translateX(37.5vw) translateY(-4px); }
+          50% { transform: translateX(50vw) translateY(2px); }
+          62.5% { transform: translateX(62.5vw) translateY(-7px); }
+          75% { transform: translateX(75vw) translateY(1px); }
+          87.5% { transform: translateX(87.5vw) translateY(-3px); }
           100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
         }
 
@@ -262,11 +277,11 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         .animate-vibration { animation: vibration 7s linear forwards; }
         .animate-quick-wobble { animation: quick-wobble 7s linear forwards; }
         .animate-gentle-float { animation: gentle-float 7s ease-in-out forwards; }
+        .animate-bumpy-motion { animation: bumpy-motion 7s ease-in-out forwards; }
         
         .typewriter {
           font-family: 'Orbitron', 'Space Mono', 'Courier New', monospace;
           font-weight: bold;
-          text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
           letter-spacing: 1px;
         }
       `}</style>
@@ -289,7 +304,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8">
             <div className="text-center">
               <p className="text-2xl md:text-3xl lg:text-4xl text-black typewriter mb-4">
-                "{displayedQuote}"
+                {displayedQuote}
               </p>
               {displayedQuote === currentSilhouette.quote && (
                 <p className="text-lg md:text-xl text-black typewriter opacity-80 animate-fade-in">

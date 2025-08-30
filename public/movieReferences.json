@@ -57,6 +57,14 @@
       "motion": "slow counterclockwise rotation"
     },
     {
+      "id": "eagle_5",
+      "name": "Eagle 5 Winnebago",
+      "svgPath": "/movie_shapes/eagle_5.svg",
+      "quote": "May the Schwartz be with you",
+      "movie": "Spaceballs",
+      "motion": "bumpy up and down motion"
+    },
+    {
       "id": "planet_express",
       "name": "Planet Express Ship",
       "svgPath": "/movie_shapes/planet_express.svg",

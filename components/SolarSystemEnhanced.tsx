@@ -2277,7 +2277,7 @@ function SolarSystemEnhanced() {
       <SunEasterEgg
         isActive={easterEggActive}
         onComplete={handleEasterEggComplete}
-        sunColor="#FDB813"
+        sunColor="#E8C543"
       />
       
     </div>
