@@ -130,28 +130,22 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         setShowQuote(true)
         typewriterEffect(selectedSilhouette.quote)
         
-        // Complete animation after 7 seconds (when SVG exits screen)
+        // SVG animation completes after 7 seconds
         completeTimeoutRef.current = setTimeout(() => {
-          console.log('🎬 SVG finished moving - starting fade out...')
+          console.log('🎬 SVG finished crossing screen - hiding text...')
           
-          // Immediately hide quotes
+          // Hide quotes immediately when SVG finishes
           setShowQuote(false)
           
-          // Start fading out the overlay immediately
-          const overlay = document.querySelector('.easter-egg-overlay-active')
-          if (overlay) {
-            overlay.classList.add('easter-egg-fade-out')
-          }
-          
-          // Complete everything after 2 seconds
+          // Wait 1 second then end Easter egg completely
           setTimeout(() => {
-            console.log('🎬 Easter egg completely finished - returning to solar system')
+            console.log('🎬 Easter egg ending - returning to solar system')
             setIsAnimating(false)
             setDisplayedQuote('')
-            setCurrentSilhouette(null)
+            setCurrentSilhouette(null) 
             setSvgContent('')
             onComplete()
-          }, 2000)
+          }, 1000)
         }, 7000)
       }
       
@@ -173,8 +167,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes straight-line {
-          from { transform: translateX(0px); }
-          to { transform: translateX(calc(100vw + 50px)); }
+          0% { transform: translateX(0px) translateY(-50%); }
+          100% { transform: translateX(calc(100vw + 50px)) translateY(-50%); }
         }
         
         @keyframes fade-out {
@@ -200,13 +194,16 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         className="fixed inset-0 z-50 flex items-center justify-center easter-egg-overlay-active"
         style={{ backgroundColor: sunColor }}
       >
-        {/* Animated silhouette - 70% smaller */}
+        {/* Animated silhouette - MUCH smaller and perfectly centered */}
         <div
           ref={animationRef}
-          className={`absolute w-6 h-6 ${getMotionClass(currentSilhouette.motion)}`}
+          className="absolute animate-straight-line"
           style={{ 
+            width: '20px',
+            height: '20px',
             left: '-50px', 
-            top: 'calc(50vh - 12px)', 
+            top: '50%',
+            transform: 'translateY(-50%)',
             position: 'fixed'
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
