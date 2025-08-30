@@ -132,17 +132,26 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         
         // Complete animation after 7 seconds (when SVG exits screen)
         completeTimeoutRef.current = setTimeout(() => {
-          // Start fade-out of quotes and overlay
+          console.log('🎬 SVG finished moving - starting fade out...')
+          
+          // Immediately hide quotes
           setShowQuote(false)
           
-          // Wait 3 more seconds, then fade out completely
+          // Start fading out the overlay immediately
+          const overlay = document.querySelector('.easter-egg-overlay-active')
+          if (overlay) {
+            overlay.classList.add('easter-egg-fade-out')
+          }
+          
+          // Complete everything after 2 seconds
           setTimeout(() => {
+            console.log('🎬 Easter egg completely finished - returning to solar system')
             setIsAnimating(false)
             setDisplayedQuote('')
             setCurrentSilhouette(null)
             setSvgContent('')
             onComplete()
-          }, 3000)
+          }, 2000)
         }, 7000)
       }
       
@@ -164,8 +173,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes straight-line {
-          from { transform: translateX(-150px) translateY(-50%); }
-          to { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
+          from { transform: translateX(0px); }
+          to { transform: translateX(calc(100vw + 50px)); }
         }
         
         @keyframes fade-out {
@@ -174,7 +183,10 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         }
 
         .animate-straight-line { animation: straight-line 7s linear forwards; }
-        .easter-egg-overlay { animation: fade-out 1s ease-out forwards; animation-delay: 7s; }
+        .easter-egg-fade-out { 
+          animation: fade-out 2s ease-out forwards !important;
+          pointer-events: none;
+        }
         
         .typewriter {
           font-family: 'Orbitron', 'Space Mono', 'Courier New', monospace;
@@ -185,14 +197,18 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
 
       {/* Full screen overlay with sun color */}
       <div 
-        className={`fixed inset-0 z-50 flex items-center justify-center ${!showQuote ? 'easter-egg-overlay' : ''}`}
+        className="fixed inset-0 z-50 flex items-center justify-center easter-egg-overlay-active"
         style={{ backgroundColor: sunColor }}
       >
-        {/* Animated silhouette */}
+        {/* Animated silhouette - 70% smaller */}
         <div
           ref={animationRef}
-          className={`absolute w-10 h-10 ${getMotionClass(currentSilhouette.motion)}`}
-          style={{ left: '-150px', top: '50%', transform: 'translateY(-50%)' }}
+          className={`absolute w-6 h-6 ${getMotionClass(currentSilhouette.motion)}`}
+          style={{ 
+            left: '-50px', 
+            top: 'calc(50vh - 12px)', 
+            position: 'fixed'
+          }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
         
