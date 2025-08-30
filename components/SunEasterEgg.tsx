@@ -177,8 +177,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes simple-left-to-right {
-          0% { transform: translateX(0px) translateY(-50%); }
-          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%); }
+          0% { transform: translateX(0px); }
+          100% { transform: translateX(calc(100vw + 40px)); }
         }
         
         @keyframes easteregg-fadeout {
@@ -202,7 +202,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           height: '100vh'
         }}
       >
-        {/* Animated silhouette - 10% SIZE */}
+        {/* Animated silhouette - FORCE CENTER USING VH */}
         <div
           ref={animationRef}
           style={{ 
@@ -210,8 +210,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
             width: '8px',
             height: '8px',
             left: '-20px', 
-            top: '50%',
-            transform: 'translateY(-50%)',
+            top: '50vh', // Use viewport height directly
+            marginTop: '-4px', // Half of height to center
             zIndex: 60,
             animation: 'simple-left-to-right 7s linear forwards'
           }}
