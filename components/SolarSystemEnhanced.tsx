@@ -6,7 +6,6 @@ import { OrbitControls } from '@react-three/drei'
 import { Mesh, Group, InstancedMesh, Object3D, Vector2, Raycaster, Vector3, CanvasTexture, RepeatWrapping, ClampToEdgeWrapping, BackSide, TextureLoader } from 'three'
 import { RotateCcw, EyeOff, Eye, Maximize, Info, ArrowLeft } from 'lucide-react'
 import SunEasterEgg from './SunEasterEgg'
-import CameraDistanceMonitor from './CameraDistanceMonitor'
 
 // Video Cache Context for preloading celestial body videos
 interface VideoCache {
@@ -2190,7 +2189,13 @@ function SolarSystemEnhanced() {
 
       {/* 3D Canvas */}
       <Canvas camera={{ position: [0, 25, 35], fov: 60 }}>
-        {/* CameraSystem removed - using CameraDistanceMonitor for Easter egg detection */}
+        <CameraSystem 
+          automaticMode={cameraAnimation} 
+          speed={cameraSpeed} 
+          verticalMin={cameraVerticalMin}
+          verticalMax={cameraVerticalMax}
+          onEasterEggTrigger={handleEasterEggTrigger}
+        />
         
         {/* Enhanced Lighting */}
         <ambientLight intensity={0.4} />
@@ -2265,13 +2270,6 @@ function SolarSystemEnhanced() {
           />
           
         </group>
-        
-        {/* Camera Distance Monitor for Easter Egg */}
-        <CameraDistanceMonitor
-          onEasterEggTrigger={handleEasterEggTrigger}
-          isEasterEggActive={easterEggActive}
-          isEasterEggCooldown={easterEggCooldown}
-        />
         
       </Canvas>
       
