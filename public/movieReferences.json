@@ -1,0 +1,76 @@
+{
+  "silhouettes": [
+    {
+      "id": "uss_enterprise",
+      "name": "USS Enterprise",
+      "svgPath": "/movie_shapes/uss_enterprise.svg",
+      "quote": "Beam me up, Scotty!",
+      "movie": "Star Trek",
+      "motion": "steady horizontal glide"
+    },
+    {
+      "id": "millennium_falcon",
+      "name": "Millennium Falcon",
+      "svgPath": "/movie_shapes/millennium_falcon.svg",
+      "quote": "Never tell me the odds!",
+      "movie": "Star Wars",
+      "motion": "slight up and down bobbing"
+    },
+    {
+      "id": "xenomorph",
+      "name": "Xenomorph Creature",
+      "svgPath": "/movie_shapes/xenomorph_creature.svg",
+      "quote": "In space, no one can hear you scream",
+      "movie": "Alien",
+      "motion": "slow clockwise rotation"
+    },
+    {
+      "id": "apollo_13",
+      "name": "Apollo Command Module",
+      "svgPath": "/movie_shapes/apollo_13.svg",
+      "quote": "Houston, we have a problem",
+      "movie": "Apollo 13",
+      "motion": "slow side-to-side wobble"
+    },
+    {
+      "id": "discovery_one",
+      "name": "Discovery One",
+      "svgPath": "/movie_shapes/discovery_one.svg",
+      "quote": "I'm sorry Dave, I'm afraid I can't do that",
+      "movie": "2001: A Space Odyssey",
+      "motion": "very slow clockwise rotation"
+    },
+    {
+      "id": "delorean",
+      "name": "DeLorean Time Machine",
+      "svgPath": "/movie_shapes/delorean.svg",
+      "quote": "Where we're going, we don't need roads",
+      "movie": "Back to the Future",
+      "motion": "slight vibration"
+    },
+    {
+      "id": "soyuz",
+      "name": "Soyuz Capsule",
+      "svgPath": "/movie_shapes/gravity-soyuz.svg",
+      "quote": "I hate space",
+      "movie": "Gravity",
+      "motion": "slow counterclockwise rotation"
+    },
+    {
+      "id": "planet_express",
+      "name": "Planet Express Ship",
+      "svgPath": "/movie_shapes/planet_express.svg",
+      "quote": "Good news, everyone!",
+      "movie": "Futurama",
+      "motion": "quick up and down wobble"
+    },
+    {
+      "id": "little_prince",
+      "name": "The Little Prince",
+      "svgPath": "/movie_shapes/le_petit_prince.svg",
+      "quote": "What is essential is invisible to the eye",
+      "movie": "The Little Prince",
+      "motion": "gentle floating up and down"
+    }
+  ]
+}

@@ -5,6 +5,8 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { Mesh, Group, InstancedMesh, Object3D, Vector2, Raycaster, Vector3, CanvasTexture, RepeatWrapping, ClampToEdgeWrapping, BackSide, TextureLoader } from 'three'
 import { RotateCcw, EyeOff, Eye, Maximize, Info, ArrowLeft } from 'lucide-react'
+import SunEasterEgg from './SunEasterEgg'
+import CameraDistanceMonitor from './CameraDistanceMonitor'
 
 // Video Cache Context for preloading celestial body videos
 interface VideoCache {
@@ -1373,12 +1375,14 @@ function CameraSystem({
   automaticMode, 
   speed, 
   verticalMin, 
-  verticalMax 
+  verticalMax,
+  onEasterEggTrigger
 }: { 
   automaticMode: boolean, 
   speed: number,
   verticalMin: number,
-  verticalMax: number 
+  verticalMax: number,
+  onEasterEggTrigger: () => void
 }) {
   const { camera } = useThree()
   const orbitControlsRef = useRef<any>(null)
@@ -1494,6 +1498,18 @@ function CameraSystem({
         camera.position.copy(currentPos)
       }
     }
+    
+    // Easter egg detection: Check if camera is very close to sun
+    const sunPosition = new Vector3(0, 0, 0) // Sun is at origin
+    const cameraPosition = camera.position
+    const distanceToSun = cameraPosition.distanceTo(sunPosition)
+    
+    // Trigger Easter egg when camera is within ~6 units of sun center
+    // (Sun radius is 4, so this means camera is ~2 units from surface)
+    // At this distance, the sun would fill most/all of the screen
+    if (distanceToSun <= 6) {
+      onEasterEggTrigger()
+    }
   })
   
   return (
@@ -1528,6 +1544,32 @@ function SolarSystemEnhanced() {
   const [controlsVisible, setControlsVisible] = useState(false)
   const [controlsPinned, setControlsPinned] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
+  
+  // Easter egg state
+  const [easterEggActive, setEasterEggActive] = useState(false)
+  const [easterEggCooldown, setEasterEggCooldown] = useState(false)
+  
+  // Easter egg handlers
+  const handleEasterEggTrigger = () => {
+    if (easterEggActive || easterEggCooldown) return
+    
+    console.log('🌟 Sun Easter Egg Triggered!')
+    setEasterEggActive(true)
+    setEasterEggCooldown(true)
+    
+    // Reset cooldown after 3 seconds
+    setTimeout(() => {
+      setEasterEggCooldown(false)
+    }, 3000)
+  }
+  
+  const handleEasterEggComplete = () => {
+    console.log('🌟 Sun Easter Egg Complete - Zooming out...')
+    setEasterEggActive(false)
+    
+    // TODO: Implement zoom out to show sun taking up 1/3 of screen
+    // This would involve camera position manipulation
+  }
 
   // Keyboard controls for camera movement and mode switching
   useEffect(() => {
@@ -2148,12 +2190,7 @@ function SolarSystemEnhanced() {
 
       {/* 3D Canvas */}
       <Canvas camera={{ position: [0, 25, 35], fov: 60 }}>
-        <CameraSystem 
-          automaticMode={cameraAnimation} 
-          speed={cameraSpeed} 
-          verticalMin={cameraVerticalMin}
-          verticalMax={cameraVerticalMax}
-        />
+        {/* CameraSystem removed - using CameraDistanceMonitor for Easter egg detection */}
         
         {/* Enhanced Lighting */}
         <ambientLight intensity={0.4} />
@@ -2228,7 +2265,23 @@ function SolarSystemEnhanced() {
           />
           
         </group>
+        
+        {/* Camera Distance Monitor for Easter Egg */}
+        <CameraDistanceMonitor
+          onEasterEggTrigger={handleEasterEggTrigger}
+          isEasterEggActive={easterEggActive}
+          isEasterEggCooldown={easterEggCooldown}
+        />
+        
       </Canvas>
+      
+      {/* Sun Easter Egg Overlay */}
+      <SunEasterEgg
+        isActive={easterEggActive}
+        onComplete={handleEasterEggComplete}
+        sunColor="#FDB813"
+      />
+      
     </div>
   )
 }
