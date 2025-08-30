@@ -140,15 +140,20 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           
           // SVG animation completes after 7 seconds
           completeTimeoutRef.current = setTimeout(() => {
-            console.log('🎬 Animation finished - ending Easter egg')
+            console.log('🎬 SVG exited screen - starting fade out')
             
-            // End everything immediately
+            // Step 1: Hide quotes immediately when SVG exits
             setShowQuote(false)
-            setIsAnimating(false)
-            setDisplayedQuote('')
-            setCurrentSilhouette(null)
-            setSvgContent('')
-            onComplete()
+            
+            // Step 2: Wait 1 second then end everything
+            setTimeout(() => {
+              console.log('🎬 Ending Easter egg completely')
+              setIsAnimating(false)
+              setDisplayedQuote('')
+              setCurrentSilhouette(null)
+              setSvgContent('')
+              onComplete()
+            }, 1000)
           }, 7000)
           
         }, 1500) // 1.5 second delay before animation starts
@@ -171,22 +176,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     <>
       {/* Custom CSS animations */}
       <style jsx>{`
-        @keyframes easteregg-move-and-rotate-cw {
-          0% { 
-            transform: translateX(0px) rotate(0deg); 
-          }
-          100% { 
-            transform: translateX(calc(100vw + 60px)) rotate(180deg); 
-          }
-        }
-        
-        @keyframes easteregg-move-and-rotate-ccw {
-          0% { 
-            transform: translateX(0px) rotate(0deg); 
-          }
-          100% { 
-            transform: translateX(calc(100vw + 60px)) rotate(-180deg); 
-          }
+        @keyframes simple-left-to-right {
+          0% { transform: translateX(0px) translateY(-50%); }
+          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%); }
         }
         
         @keyframes easteregg-fadeout {
@@ -210,20 +202,18 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           height: '100vh'
         }}
       >
-        {/* Animated silhouette - FORCE TINY SIZE */}
+        {/* Animated silhouette - 10% SIZE */}
         <div
           ref={animationRef}
           style={{ 
             position: 'fixed',
-            width: '12px !important',     // FORCE very small
-            height: '12px !important',    // FORCE very small
-            maxWidth: '12px',
-            maxHeight: '12px',
-            fontSize: '12px',
-            left: '-30px', 
-            top: 'calc(50vh - 700px)', // Moved up 700px as requested
+            width: '8px',
+            height: '8px',
+            left: '-20px', 
+            top: '50%',
+            transform: 'translateY(-50%)',
             zIndex: 60,
-            animation: `easteregg-move-and-rotate-${rotationDirection} 7s linear forwards`
+            animation: 'simple-left-to-right 7s linear forwards'
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
