@@ -1375,17 +1375,13 @@ function CameraSystem({
   speed, 
   verticalMin, 
   verticalMax,
-  onEasterEggTrigger,
-  easterEggCameraReset,
-  onEasterEggCameraResetComplete
+  onEasterEggTrigger
 }: { 
   automaticMode: boolean, 
   speed: number,
   verticalMin: number,
   verticalMax: number,
-  onEasterEggTrigger: () => void,
-  easterEggCameraReset: {x: number, y: number, z: number} | null,
-  onEasterEggCameraResetComplete: () => void
+  onEasterEggTrigger: () => void
 }) {
   const { camera } = useThree()
   const orbitControlsRef = useRef<any>(null)
@@ -1421,31 +1417,6 @@ function CameraSystem({
   }, [])
   
   useFrame((state) => {
-    // Handle Easter egg camera reset (zoom out after Easter egg)
-    if (easterEggCameraReset) {
-      const currentPos = camera.position
-      const targetPos = easterEggCameraReset
-      
-      // Smooth interpolation to target position over ~1 second
-      const lerpFactor = 0.05 // Adjust for animation speed
-      
-      camera.position.x += (targetPos.x - currentPos.x) * lerpFactor
-      camera.position.y += (targetPos.y - currentPos.y) * lerpFactor  
-      camera.position.z += (targetPos.z - currentPos.z) * lerpFactor
-      camera.lookAt(0, 0, 0)
-      
-      // Check if we're close enough to target to stop animation
-      const distance = currentPos.distanceTo(new Vector3(targetPos.x, targetPos.y, targetPos.z))
-      if (distance < 0.5) {
-        // Animation complete, clear the reset state
-        setTimeout(() => {
-          onEasterEggCameraResetComplete()
-        }, 100)
-      }
-      
-      return // Skip normal camera logic during reset
-    }
-    
     if (automaticMode) {
       // AUTOMATIC MODE: Camera moves, no manual controls
       const time = state.clock.elapsedTime * speed
@@ -1576,7 +1547,6 @@ function SolarSystemEnhanced() {
   // Easter egg state
   const [easterEggActive, setEasterEggActive] = useState(false)
   const [easterEggCooldown, setEasterEggCooldown] = useState(false)
-  const [easterEggCameraReset, setEasterEggCameraReset] = useState<{x: number, y: number, z: number} | null>(null)
   
   // Easter egg handlers
   const handleEasterEggTrigger = () => {
@@ -1593,22 +1563,9 @@ function SolarSystemEnhanced() {
   }
   
   const handleEasterEggComplete = () => {
-    console.log('🌟 Sun Easter Egg Complete - Zooming out...')
+    console.log('🌟 Sun Easter Egg Complete - Returning to solar system...')
     setEasterEggActive(false)
-    
-    // Zoom camera out to show sun taking up 1/3 of screen
-    handleCameraZoomOut()
-  }
-  
-  const handleCameraZoomOut = () => {
-    // For sun (radius=4) to take up 1/3 of screen with 60° FOV:
-    // tan(10°) = radius / distance, so distance = 4 / tan(10°) ≈ 23
-    const targetDistance = 25
-    const targetPosition = { x: 0, y: 5, z: targetDistance }
-    
-    // This will be implemented via a ref to the camera system
-    // For now, we'll trigger a state change that the camera system can respond to
-    setEasterEggCameraReset(targetPosition)
+    // Easter egg simply fades out, user returns to normal view
   }
 
   // Keyboard controls for camera movement and mode switching
@@ -2236,8 +2193,6 @@ function SolarSystemEnhanced() {
           verticalMin={cameraVerticalMin}
           verticalMax={cameraVerticalMax}
           onEasterEggTrigger={handleEasterEggTrigger}
-          easterEggCameraReset={easterEggCameraReset}
-          onEasterEggCameraResetComplete={() => setEasterEggCameraReset(null)}
         />
         
         {/* Enhanced Lighting */}

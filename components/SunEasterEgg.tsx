@@ -104,32 +104,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     setTimeout(type, 1000) // Start typing after 1 second delay
   }
 
-  // Get CSS animation class for motion type
+  // All animations now use simple straight line motion
   const getMotionClass = (motion: string): string => {
-    switch (motion) {
-      case 'steady horizontal glide':
-        return 'animate-steady-glide'
-      case 'slight up and down bobbing':
-        return 'animate-bobbing'
-      case 'slow clockwise rotation':
-        return 'animate-slow-rotate-cw'
-      case 'very slow clockwise rotation':
-        return 'animate-very-slow-rotate-cw'
-      case 'slow counterclockwise rotation':
-        return 'animate-slow-rotate-ccw'
-      case 'slow side-to-side wobble':
-        return 'animate-wobble'
-      case 'slight vibration':
-        return 'animate-vibration'
-      case 'quick up and down wobble':
-        return 'animate-quick-wobble'
-      case 'gentle floating up and down':
-        return 'animate-gentle-float'
-      case 'bumpy up and down motion':
-        return 'animate-bumpy-motion'
-      default:
-        return 'animate-steady-glide'
-    }
+    return 'animate-straight-line'
   }
 
   // Start the Easter egg animation
@@ -153,16 +130,17 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         setShowQuote(true)
         typewriterEffect(selectedSilhouette.quote)
         
-        // Complete animation after 7 seconds
+        // Complete animation after 7 seconds (when SVG exits screen)
         completeTimeoutRef.current = setTimeout(() => {
-          setIsAnimating(false)
+          // Start fade-out of quotes and overlay
           setShowQuote(false)
-          setDisplayedQuote('')
-          setCurrentSilhouette(null)
-          setSvgContent('')
           
-          // Wait 3 more seconds then trigger zoom out
+          // Wait 3 more seconds, then fade out completely
           setTimeout(() => {
+            setIsAnimating(false)
+            setDisplayedQuote('')
+            setCurrentSilhouette(null)
+            setSvgContent('')
             onComplete()
           }, 3000)
         }, 7000)
@@ -185,100 +163,18 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     <>
       {/* Custom CSS animations */}
       <style jsx>{`
-        @keyframes steady-glide {
+        @keyframes straight-line {
           from { transform: translateX(-150px) translateY(-50%); }
           to { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
         }
         
-        @keyframes bobbing {
-          0%, 100% { transform: translateX(-150px) translateY(-50%); }
-          25% { transform: translateX(25vw) translateY(calc(-50% - 8px)); }
-          50% { transform: translateX(50vw) translateY(-50%); }
-          75% { transform: translateX(75vw) translateY(calc(-50% - 6px)); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
-        }
-        
-        @keyframes slow-rotate-cw {
-          from { transform: translateX(-150px) translateY(-50%) rotate(0deg); }
-          to { transform: translateX(calc(100vw + 150px)) translateY(-50%) rotate(360deg); }
-        }
-        
-        @keyframes very-slow-rotate-cw {
-          from { transform: translateX(-150px) translateY(-50%) rotate(0deg); }
-          to { transform: translateX(calc(100vw + 150px)) translateY(-50%) rotate(180deg); }
-        }
-        
-        @keyframes slow-rotate-ccw {
-          from { transform: translateX(-150px) translateY(-50%) rotate(0deg); }
-          to { transform: translateX(calc(100vw + 150px)) translateY(-50%) rotate(-360deg); }
-        }
-        
-        @keyframes wobble {
-          0% { transform: translateX(-150px) translateY(-50%); }
-          25% { transform: translateX(25vw) translateY(calc(-50% - 4px)); }
-          50% { transform: translateX(50vw) translateY(calc(-50% + 4px)); }
-          75% { transform: translateX(75vw) translateY(calc(-50% - 4px)); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
-        }
-        
-        @keyframes vibration {
-          0%, 100% { transform: translateX(-150px) translateY(-50%); }
-          10% { transform: translateX(-148px) translateY(-50%); }
-          20% { transform: translateX(-152px) translateY(-50%); }
-          30% { transform: translateX(-149px) translateY(-50%); }
-          40% { transform: translateX(-151px) translateY(-50%); }
-          50% { transform: translateX(50vw) translateY(-50%); }
-          60% { transform: translateX(calc(50vw + 1px)) translateY(-50%); }
-          70% { transform: translateX(calc(50vw - 1px)) translateY(-50%); }
-          80% { transform: translateX(calc(50vw + 1px)) translateY(-50%); }
-          90% { transform: translateX(calc(50vw - 1px)) translateY(-50%); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
-        }
-        
-        @keyframes quick-wobble {
-          0% { transform: translateX(-150px) translateY(-50%); }
-          10% { transform: translateX(10vw) translateY(calc(-50% - 5px)); }
-          20% { transform: translateX(20vw) translateY(calc(-50% + 5px)); }
-          30% { transform: translateX(30vw) translateY(calc(-50% - 5px)); }
-          40% { transform: translateX(40vw) translateY(calc(-50% + 5px)); }
-          50% { transform: translateX(50vw) translateY(calc(-50% - 5px)); }
-          60% { transform: translateX(60vw) translateY(calc(-50% + 5px)); }
-          70% { transform: translateX(70vw) translateY(calc(-50% - 5px)); }
-          80% { transform: translateX(80vw) translateY(calc(-50% + 5px)); }
-          90% { transform: translateX(90vw) translateY(calc(-50% - 5px)); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
-        }
-        
-        @keyframes gentle-float {
-          0%, 100% { transform: translateX(-150px) translateY(-50%); }
-          25% { transform: translateX(25vw) translateY(calc(-50% - 8px)); }
-          50% { transform: translateX(50vw) translateY(calc(-50% - 3px)); }
-          75% { transform: translateX(75vw) translateY(calc(-50% - 10px)); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
-        }
-        
-        @keyframes bumpy-motion {
-          0% { transform: translateX(-150px) translateY(-50%); }
-          12.5% { transform: translateX(12.5vw) translateY(calc(-50% - 6px)); }
-          25% { transform: translateX(25vw) translateY(calc(-50% + 3px)); }
-          37.5% { transform: translateX(37.5vw) translateY(calc(-50% - 4px)); }
-          50% { transform: translateX(50vw) translateY(calc(-50% + 2px)); }
-          62.5% { transform: translateX(62.5vw) translateY(calc(-50% - 7px)); }
-          75% { transform: translateX(75vw) translateY(calc(-50% + 1px)); }
-          87.5% { transform: translateX(87.5vw) translateY(calc(-50% - 3px)); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
+        @keyframes fade-out {
+          from { opacity: 1; }
+          to { opacity: 0; }
         }
 
-        .animate-steady-glide { animation: steady-glide 7s linear forwards; }
-        .animate-bobbing { animation: bobbing 7s ease-in-out forwards; }
-        .animate-slow-rotate-cw { animation: slow-rotate-cw 7s linear forwards; }
-        .animate-very-slow-rotate-cw { animation: very-slow-rotate-cw 7s linear forwards; }
-        .animate-slow-rotate-ccw { animation: slow-rotate-ccw 7s linear forwards; }
-        .animate-wobble { animation: wobble 7s ease-in-out forwards; }
-        .animate-vibration { animation: vibration 7s linear forwards; }
-        .animate-quick-wobble { animation: quick-wobble 7s linear forwards; }
-        .animate-gentle-float { animation: gentle-float 7s ease-in-out forwards; }
-        .animate-bumpy-motion { animation: bumpy-motion 7s ease-in-out forwards; }
+        .animate-straight-line { animation: straight-line 7s linear forwards; }
+        .easter-egg-overlay { animation: fade-out 1s ease-out forwards; animation-delay: 7s; }
         
         .typewriter {
           font-family: 'Orbitron', 'Space Mono', 'Courier New', monospace;
@@ -289,14 +185,14 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
 
       {/* Full screen overlay with sun color */}
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center"
+        className={`fixed inset-0 z-50 flex items-center justify-center ${!showQuote ? 'easter-egg-overlay' : ''}`}
         style={{ backgroundColor: sunColor }}
       >
         {/* Animated silhouette */}
         <div
           ref={animationRef}
-          className={`absolute w-32 h-32 ${getMotionClass(currentSilhouette.motion)}`}
-          style={{ left: '-150px', top: '50%' }}
+          className={`absolute w-10 h-10 ${getMotionClass(currentSilhouette.motion)}`}
+          style={{ left: '-150px', top: '50%', transform: 'translateY(-50%)' }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
         
