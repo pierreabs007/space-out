@@ -145,13 +145,16 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
             // Step 1: Hide quotes immediately when SVG exits
             setShowQuote(false)
             
-            // Step 2: IMMEDIATELY end everything
-            console.log('🎬 Ending Easter egg IMMEDIATELY')
+            // Step 2: FORCE END EVERYTHING
+            console.log('🎬 FORCE ENDING Easter egg - calling onComplete')
             setIsAnimating(false)
             setDisplayedQuote('')
             setCurrentSilhouette(null)
             setSvgContent('')
-            onComplete()
+            setTimeout(() => {
+              console.log('🎬 CALLING onComplete()')
+              onComplete()
+            }, 100)
           }, 7000)
           
         }, 1500) // 1.5 second delay before animation starts
@@ -202,23 +205,19 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           height: '100vh'
         }}
       >
-        {/* Animated silhouette - FORCE EVERYTHING */}
+        {/* Animated silhouette - USE SCALE TO FORCE SIZE */}
         <div
           ref={animationRef}
           style={{ 
             position: 'fixed',
-            width: '6px !important',
-            height: '6px !important',
-            maxWidth: '6px !important',
-            maxHeight: '6px !important',
-            minWidth: '6px !important',
-            minHeight: '6px !important',
-            left: '-20px', 
-            top: '200px', // Fixed pixel position from top
+            width: '20px',
+            height: '20px',
+            left: '-25px', 
+            top: '300px', // Middle of screen for most displays
             zIndex: 9999,
             animation: 'simple-left-to-right 7s linear forwards',
-            overflow: 'hidden',
-            fontSize: '6px !important'
+            transform: 'scale(0.2)', // Force 20% size (VERY small)
+            transformOrigin: 'center'
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />

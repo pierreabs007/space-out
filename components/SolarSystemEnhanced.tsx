@@ -1565,9 +1565,11 @@ function SolarSystemEnhanced() {
   }
   
   const handleEasterEggComplete = () => {
-    console.log('🌟 Sun Easter Egg Complete - Returning to solar system...')
+    console.log('🌟 Sun Easter Egg Complete - FORCING return to solar system...')
     setEasterEggActive(false)
-    // Easter egg simply fades out, user returns to normal view
+    setEasterEggCooldown(false)
+    // Force any other cleanup needed
+    console.log('🌟 Easter egg state cleared - should return to solar system now')
   }
 
   // Keyboard controls for camera movement and mode switching
