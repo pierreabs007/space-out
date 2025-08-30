@@ -186,87 +186,87 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes steady-glide {
-          from { transform: translateX(-150px); }
-          to { transform: translateX(calc(100vw + 150px)); }
+          from { transform: translateX(-150px) translateY(-50%); }
+          to { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
         }
         
         @keyframes bobbing {
-          0%, 100% { transform: translateX(-150px) translateY(0px); }
-          25% { transform: translateX(25vw) translateY(-8px); }
-          50% { transform: translateX(50vw) translateY(0px); }
-          75% { transform: translateX(75vw) translateY(-6px); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
+          0%, 100% { transform: translateX(-150px) translateY(-50%); }
+          25% { transform: translateX(25vw) translateY(calc(-50% - 8px)); }
+          50% { transform: translateX(50vw) translateY(-50%); }
+          75% { transform: translateX(75vw) translateY(calc(-50% - 6px)); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
         }
         
         @keyframes slow-rotate-cw {
-          from { transform: translateX(-150px) rotate(0deg); }
-          to { transform: translateX(calc(100vw + 150px)) rotate(360deg); }
+          from { transform: translateX(-150px) translateY(-50%) rotate(0deg); }
+          to { transform: translateX(calc(100vw + 150px)) translateY(-50%) rotate(360deg); }
         }
         
         @keyframes very-slow-rotate-cw {
-          from { transform: translateX(-150px) rotate(0deg); }
-          to { transform: translateX(calc(100vw + 150px)) rotate(180deg); }
+          from { transform: translateX(-150px) translateY(-50%) rotate(0deg); }
+          to { transform: translateX(calc(100vw + 150px)) translateY(-50%) rotate(180deg); }
         }
         
         @keyframes slow-rotate-ccw {
-          from { transform: translateX(-150px) rotate(0deg); }
-          to { transform: translateX(calc(100vw + 150px)) rotate(-360deg); }
+          from { transform: translateX(-150px) translateY(-50%) rotate(0deg); }
+          to { transform: translateX(calc(100vw + 150px)) translateY(-50%) rotate(-360deg); }
         }
         
         @keyframes wobble {
-          0% { transform: translateX(-150px) translateY(0px); }
-          25% { transform: translateX(25vw) translateY(-4px); }
-          50% { transform: translateX(50vw) translateY(4px); }
-          75% { transform: translateX(75vw) translateY(-4px); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
+          0% { transform: translateX(-150px) translateY(-50%); }
+          25% { transform: translateX(25vw) translateY(calc(-50% - 4px)); }
+          50% { transform: translateX(50vw) translateY(calc(-50% + 4px)); }
+          75% { transform: translateX(75vw) translateY(calc(-50% - 4px)); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
         }
         
         @keyframes vibration {
-          0%, 100% { transform: translateX(-150px); }
-          10% { transform: translateX(-148px); }
-          20% { transform: translateX(-152px); }
-          30% { transform: translateX(-149px); }
-          40% { transform: translateX(-151px); }
-          50% { transform: translateX(50vw); }
-          60% { transform: translateX(calc(50vw + 1px)); }
-          70% { transform: translateX(calc(50vw - 1px)); }
-          80% { transform: translateX(calc(50vw + 1px)); }
-          90% { transform: translateX(calc(50vw - 1px)); }
-          100% { transform: translateX(calc(100vw + 150px)); }
+          0%, 100% { transform: translateX(-150px) translateY(-50%); }
+          10% { transform: translateX(-148px) translateY(-50%); }
+          20% { transform: translateX(-152px) translateY(-50%); }
+          30% { transform: translateX(-149px) translateY(-50%); }
+          40% { transform: translateX(-151px) translateY(-50%); }
+          50% { transform: translateX(50vw) translateY(-50%); }
+          60% { transform: translateX(calc(50vw + 1px)) translateY(-50%); }
+          70% { transform: translateX(calc(50vw - 1px)) translateY(-50%); }
+          80% { transform: translateX(calc(50vw + 1px)) translateY(-50%); }
+          90% { transform: translateX(calc(50vw - 1px)) translateY(-50%); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
         }
         
         @keyframes quick-wobble {
-          0% { transform: translateX(-150px) translateY(0px); }
-          10% { transform: translateX(10vw) translateY(-5px); }
-          20% { transform: translateX(20vw) translateY(5px); }
-          30% { transform: translateX(30vw) translateY(-5px); }
-          40% { transform: translateX(40vw) translateY(5px); }
-          50% { transform: translateX(50vw) translateY(-5px); }
-          60% { transform: translateX(60vw) translateY(5px); }
-          70% { transform: translateX(70vw) translateY(-5px); }
-          80% { transform: translateX(80vw) translateY(5px); }
-          90% { transform: translateX(90vw) translateY(-5px); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
+          0% { transform: translateX(-150px) translateY(-50%); }
+          10% { transform: translateX(10vw) translateY(calc(-50% - 5px)); }
+          20% { transform: translateX(20vw) translateY(calc(-50% + 5px)); }
+          30% { transform: translateX(30vw) translateY(calc(-50% - 5px)); }
+          40% { transform: translateX(40vw) translateY(calc(-50% + 5px)); }
+          50% { transform: translateX(50vw) translateY(calc(-50% - 5px)); }
+          60% { transform: translateX(60vw) translateY(calc(-50% + 5px)); }
+          70% { transform: translateX(70vw) translateY(calc(-50% - 5px)); }
+          80% { transform: translateX(80vw) translateY(calc(-50% + 5px)); }
+          90% { transform: translateX(90vw) translateY(calc(-50% - 5px)); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
         }
         
         @keyframes gentle-float {
-          0%, 100% { transform: translateX(-150px) translateY(0px); }
-          25% { transform: translateX(25vw) translateY(-8px); }
-          50% { transform: translateX(50vw) translateY(-3px); }
-          75% { transform: translateX(75vw) translateY(-10px); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
+          0%, 100% { transform: translateX(-150px) translateY(-50%); }
+          25% { transform: translateX(25vw) translateY(calc(-50% - 8px)); }
+          50% { transform: translateX(50vw) translateY(calc(-50% - 3px)); }
+          75% { transform: translateX(75vw) translateY(calc(-50% - 10px)); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
         }
         
         @keyframes bumpy-motion {
-          0% { transform: translateX(-150px) translateY(0px); }
-          12.5% { transform: translateX(12.5vw) translateY(-6px); }
-          25% { transform: translateX(25vw) translateY(3px); }
-          37.5% { transform: translateX(37.5vw) translateY(-4px); }
-          50% { transform: translateX(50vw) translateY(2px); }
-          62.5% { transform: translateX(62.5vw) translateY(-7px); }
-          75% { transform: translateX(75vw) translateY(1px); }
-          87.5% { transform: translateX(87.5vw) translateY(-3px); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(0px); }
+          0% { transform: translateX(-150px) translateY(-50%); }
+          12.5% { transform: translateX(12.5vw) translateY(calc(-50% - 6px)); }
+          25% { transform: translateX(25vw) translateY(calc(-50% + 3px)); }
+          37.5% { transform: translateX(37.5vw) translateY(calc(-50% - 4px)); }
+          50% { transform: translateX(50vw) translateY(calc(-50% + 2px)); }
+          62.5% { transform: translateX(62.5vw) translateY(calc(-50% - 7px)); }
+          75% { transform: translateX(75vw) translateY(calc(-50% + 1px)); }
+          87.5% { transform: translateX(87.5vw) translateY(calc(-50% - 3px)); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%); }
         }
 
         .animate-steady-glide { animation: steady-glide 7s linear forwards; }
@@ -295,8 +295,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         {/* Animated silhouette */}
         <div
           ref={animationRef}
-          className={`absolute top-1/2 -translate-y-1/2 w-32 h-32 ${getMotionClass(currentSilhouette.motion)}`}
-          style={{ left: '-150px' }}
+          className={`absolute w-32 h-32 ${getMotionClass(currentSilhouette.motion)}`}
+          style={{ left: '-150px', top: '50%' }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
         
@@ -309,7 +309,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
               </p>
               {displayedQuote === currentSilhouette.quote && (
                 <p className="text-lg md:text-xl text-black typewriter opacity-80 animate-fade-in">
-                  — {currentSilhouette.movie} ({currentSilhouette.year})
+                  {currentSilhouette.movie} ({currentSilhouette.year})
                 </p>
               )}
             </div>
