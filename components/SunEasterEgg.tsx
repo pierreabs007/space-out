@@ -168,6 +168,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     }
   }, [isActive, isAnimating, onComplete])
 
+  console.log('🎬 SunEasterEgg render - isActive:', isActive, 'currentSilhouette:', currentSilhouette?.name)
+  
   if (!isActive || !currentSilhouette) {
     return null
   }

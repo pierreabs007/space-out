@@ -1504,9 +1504,11 @@ function CameraSystem({
     const distanceToSun = cameraPosition.distanceTo(sunPosition)
     
     // Trigger Easter egg when camera is within ~6 units of sun center
-    // (Sun radius is 4, so this means camera is ~2 units from surface)
+    // (Sun radius is 4, so this means camera is ~2 units from surface)  
     // At this distance, the sun would fill most/all of the screen
+    console.log('🔍 Distance to sun:', distanceToSun.toFixed(2))
     if (distanceToSun <= 6) {
+      console.log('🚨 EASTER EGG SHOULD TRIGGER NOW!')
       onEasterEggTrigger()
     }
   })
