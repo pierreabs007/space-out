@@ -8,6 +8,7 @@ interface Silhouette {
   svgPath: string
   quote: string
   movie: string
+  year: number
   motion: string
 }
 
@@ -308,7 +309,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
               </p>
               {displayedQuote === currentSilhouette.quote && (
                 <p className="text-lg md:text-xl text-black typewriter opacity-80 animate-fade-in">
-                  — {currentSilhouette.movie}
+                  — {currentSilhouette.movie} ({currentSilhouette.year})
                 </p>
               )}
             </div>

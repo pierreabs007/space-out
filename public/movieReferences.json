@@ -6,6 +6,7 @@
       "svgPath": "/movie_shapes/uss_enterprise.svg",
       "quote": "Beam me up, Scotty!",
       "movie": "Star Trek",
+      "year": 1979,
       "motion": "steady horizontal glide"
     },
     {
@@ -14,6 +15,7 @@
       "svgPath": "/movie_shapes/millennium_falcon.svg",
       "quote": "Never tell me the odds!",
       "movie": "Star Wars",
+      "year": 1977,
       "motion": "slight up and down bobbing"
     },
     {
@@ -22,6 +24,7 @@
       "svgPath": "/movie_shapes/xenomorph_creature.svg",
       "quote": "In space, no one can hear you scream",
       "movie": "Alien",
+      "year": 1979,
       "motion": "slow clockwise rotation"
     },
     {
@@ -30,6 +33,7 @@
       "svgPath": "/movie_shapes/apollo_13.svg",
       "quote": "Houston, we have a problem",
       "movie": "Apollo 13",
+      "year": 1995,
       "motion": "slow side-to-side wobble"
     },
     {
@@ -38,6 +42,7 @@
       "svgPath": "/movie_shapes/discovery_one.svg",
       "quote": "I'm sorry Dave, I'm afraid I can't do that",
       "movie": "2001: A Space Odyssey",
+      "year": 1968,
       "motion": "very slow clockwise rotation"
     },
     {
@@ -46,6 +51,7 @@
       "svgPath": "/movie_shapes/delorean.svg",
       "quote": "Where we're going, we don't need roads",
       "movie": "Back to the Future",
+      "year": 1985,
       "motion": "slight vibration"
     },
     {
@@ -54,6 +60,7 @@
       "svgPath": "/movie_shapes/gravity-soyuz.svg",
       "quote": "I hate space",
       "movie": "Gravity",
+      "year": 2013,
       "motion": "slow counterclockwise rotation"
     },
     {
@@ -62,6 +69,7 @@
       "svgPath": "/movie_shapes/eagle_5.svg",
       "quote": "May the Schwartz be with you",
       "movie": "Spaceballs",
+      "year": 1987,
       "motion": "bumpy up and down motion"
     },
     {
@@ -70,6 +78,7 @@
       "svgPath": "/movie_shapes/planet_express.svg",
       "quote": "Good news, everyone!",
       "movie": "Futurama",
+      "year": 1999,
       "motion": "quick up and down wobble"
     },
     {
@@ -78,6 +87,7 @@
       "svgPath": "/movie_shapes/le_petit_prince.svg",
       "quote": "What is essential is invisible to the eye",
       "movie": "The Little Prince",
+      "year": 2015,
       "motion": "gentle floating up and down"
     }
   ]
