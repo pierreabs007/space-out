@@ -24,6 +24,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
   const [showQuote, setShowQuote] = useState(false)
   const [displayedQuote, setDisplayedQuote] = useState('')
   const [isAnimating, setIsAnimating] = useState(false)
+  const [rotationDirection, setRotationDirection] = useState<'cw' | 'ccw'>('cw')
   const animationRef = useRef<HTMLDivElement>(null)
   const quoteTimeoutRef = useRef<NodeJS.Timeout>()
   const completeTimeoutRef = useRef<NodeJS.Timeout>()
@@ -122,6 +123,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const selectedSilhouette = getNextSilhouette(silhouettes)
         setCurrentSilhouette(selectedSilhouette)
         
+        // Choose rotation direction ONCE when animation starts
+        setRotationDirection(Math.random() > 0.5 ? 'cw' : 'ccw')
+        
         // Load SVG content
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
@@ -167,14 +171,22 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     <>
       {/* Custom CSS animations */}
       <style jsx>{`
-        @keyframes easteregg-rotate-cw {
-          0% { transform: translateX(0px) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 60px)) rotate(360deg); }
+        @keyframes easteregg-move-and-rotate-cw {
+          0% { 
+            transform: translateX(0px) rotate(0deg); 
+          }
+          100% { 
+            transform: translateX(calc(100vw + 60px)) rotate(180deg); 
+          }
         }
         
-        @keyframes easteregg-rotate-ccw {
-          0% { transform: translateX(0px) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 60px)) rotate(-360deg); }
+        @keyframes easteregg-move-and-rotate-ccw {
+          0% { 
+            transform: translateX(0px) rotate(0deg); 
+          }
+          100% { 
+            transform: translateX(calc(100vw + 60px)) rotate(-180deg); 
+          }
         }
         
         @keyframes easteregg-fadeout {
@@ -198,17 +210,20 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           height: '100vh'
         }}
       >
-        {/* Animated silhouette - 70% SMALLER, MOVED UP 700px */}
+        {/* Animated silhouette - FORCE TINY SIZE */}
         <div
           ref={animationRef}
           style={{ 
             position: 'fixed',
-            width: '16px',     // 70% smaller than original
-            height: '16px',    // 70% smaller than original
+            width: '12px !important',     // FORCE very small
+            height: '12px !important',    // FORCE very small
+            maxWidth: '12px',
+            maxHeight: '12px',
+            fontSize: '12px',
             left: '-30px', 
             top: 'calc(50vh - 700px)', // Moved up 700px as requested
             zIndex: 60,
-            animation: `easteregg-rotate-${Math.random() > 0.5 ? 'cw' : 'ccw'} 7s linear forwards`
+            animation: `easteregg-move-and-rotate-${rotationDirection} 7s linear forwards`
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
