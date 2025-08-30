@@ -145,15 +145,13 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
             // Step 1: Hide quotes immediately when SVG exits
             setShowQuote(false)
             
-            // Step 2: Wait 1 second then end everything
-            setTimeout(() => {
-              console.log('🎬 Ending Easter egg completely')
-              setIsAnimating(false)
-              setDisplayedQuote('')
-              setCurrentSilhouette(null)
-              setSvgContent('')
-              onComplete()
-            }, 1000)
+            // Step 2: IMMEDIATELY end everything
+            console.log('🎬 Ending Easter egg IMMEDIATELY')
+            setIsAnimating(false)
+            setDisplayedQuote('')
+            setCurrentSilhouette(null)
+            setSvgContent('')
+            onComplete()
           }, 7000)
           
         }, 1500) // 1.5 second delay before animation starts
@@ -204,18 +202,23 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           height: '100vh'
         }}
       >
-        {/* Animated silhouette - FORCE CENTER USING VH */}
+        {/* Animated silhouette - FORCE EVERYTHING */}
         <div
           ref={animationRef}
           style={{ 
             position: 'fixed',
-            width: '8px',
-            height: '8px',
+            width: '6px !important',
+            height: '6px !important',
+            maxWidth: '6px !important',
+            maxHeight: '6px !important',
+            minWidth: '6px !important',
+            minHeight: '6px !important',
             left: '-20px', 
-            top: '50vh', // Use viewport height directly
-            marginTop: '-4px', // Half of height to center
-            zIndex: 60,
-            animation: 'simple-left-to-right 7s linear forwards'
+            top: '200px', // Fixed pixel position from top
+            zIndex: 9999,
+            animation: 'simple-left-to-right 7s linear forwards',
+            overflow: 'hidden',
+            fontSize: '6px !important'
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
