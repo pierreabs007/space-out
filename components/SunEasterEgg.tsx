@@ -126,24 +126,28 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // Start quote typewriter effect
-        setShowQuote(true)
-        typewriterEffect(selectedSilhouette.quote)
-        
-        // SVG animation completes after 7 seconds - FORCE END
-        completeTimeoutRef.current = setTimeout(() => {
-          console.log('🎬 FORCING Easter egg to end - hiding all elements')
+        // WAIT 1.5 seconds before starting animation
+        setTimeout(() => {
+          console.log('🎬 Starting animation after delay...')
           
-          // IMMEDIATELY hide everything
-          setShowQuote(false)
-          setIsAnimating(false)
-          setDisplayedQuote('')
-          setCurrentSilhouette(null)
-          setSvgContent('')
+          // Start quote typewriter effect
+          setShowQuote(true)
+          typewriterEffect(selectedSilhouette.quote)
           
-          // Call completion
-          onComplete()
-        }, 7500) // Give slight buffer for animation to complete
+          // SVG animation completes after 7 seconds
+          completeTimeoutRef.current = setTimeout(() => {
+            console.log('🎬 Animation finished - ending Easter egg')
+            
+            // End everything immediately
+            setShowQuote(false)
+            setIsAnimating(false)
+            setDisplayedQuote('')
+            setCurrentSilhouette(null)
+            setSvgContent('')
+            onComplete()
+          }, 7000)
+          
+        }, 1500) // 1.5 second delay before animation starts
       }
       
       startAnimation()
@@ -163,18 +167,19 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     <>
       {/* Custom CSS animations */}
       <style jsx>{`
-        @keyframes easteregg-move {
-          0% { transform: translateX(0px); }
-          100% { transform: translateX(calc(100vw + 60px)); }
+        @keyframes easteregg-rotate-cw {
+          0% { transform: translateX(0px) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 60px)) rotate(360deg); }
+        }
+        
+        @keyframes easteregg-rotate-ccw {
+          0% { transform: translateX(0px) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 60px)) rotate(-360deg); }
         }
         
         @keyframes easteregg-fadeout {
           0% { opacity: 1; }
           100% { opacity: 0; }
-        }
-        
-        .easteregg-ending {
-          animation: easteregg-fadeout 2s ease-out forwards;
         }
         
         .typewriter {
@@ -193,17 +198,17 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           height: '100vh'
         }}
       >
-        {/* Animated silhouette - FORCE SMALL SIZE AND CENTER */}
+        {/* Animated silhouette - 70% SMALLER, MOVED UP 700px */}
         <div
           ref={animationRef}
           style={{ 
             position: 'fixed',
-            width: '24px',
-            height: '24px',
+            width: '16px',     // 70% smaller than original
+            height: '16px',    // 70% smaller than original
             left: '-30px', 
-            top: 'calc(50vh - 12px)',
+            top: 'calc(50vh - 700px)', // Moved up 700px as requested
             zIndex: 60,
-            animation: 'easteregg-move 7s linear forwards'
+            animation: `easteregg-rotate-${Math.random() > 0.5 ? 'cw' : 'ccw'} 7s linear forwards`
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
