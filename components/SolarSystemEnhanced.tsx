@@ -1552,16 +1552,20 @@ function SolarSystemEnhanced() {
   
   // Easter egg handlers
   const handleEasterEggTrigger = () => {
-    if (easterEggActive || easterEggCooldown) return
+    if (easterEggActive || easterEggCooldown) {
+      console.log('🚨 Easter egg trigger BLOCKED - already active or cooling down')
+      return
+    }
     
     console.log('🌟 Sun Easter Egg Triggered!')
     setEasterEggActive(true)
     setEasterEggCooldown(true)
     
-    // Reset cooldown after 3 seconds
+    // Reset cooldown after 15 seconds (long enough for full sequence)
     setTimeout(() => {
+      console.log('🚨 Easter egg cooldown reset')
       setEasterEggCooldown(false)
-    }, 3000)
+    }, 15000)
   }
   
   const handleEasterEggComplete = () => {
