@@ -230,8 +230,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           70% { transform: translateX(70vw) translateY(calc(-50% - 1px)) scale(0.28); }
           80% { transform: translateX(80vw) translateY(calc(-50% + 1px)) scale(0.28); }
           90% { transform: translateX(90vw) translateY(calc(-50% - 1px)) scale(0.28); }
-          95% { transform: translateX(calc(100vw + 200px)) translateY(-50%) scale(0.28); }
-          100% { transform: translateX(calc(100vw + 500px)) translateY(-50%) scale(0.28); visibility: hidden; }
+          95% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.28); }
+          100% { left: calc(100vw + 1000px); transform: translateY(-50%) scale(0.28); visibility: hidden; display: none; }
         }
         
         @keyframes easteregg-fadeout {
