@@ -146,23 +146,13 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         
         // Animation completes after 9 seconds (2s delay + 7s animation)
         setTimeout(() => {
-          console.log('🚨 TIMEOUT FIRED - Animation should be complete!')
-          console.log('🚨 About to call onComplete() to exit Easter egg')
+          console.log('🚨🚨🚨 ANIMATION COMPLETE TIMEOUT FIRED!')
           
-          // Clear all local state immediately
-          setIsAnimating(false)
-          setStartAnimation(false)
-          setShowSvg(false)
-          setShowQuote(false)
-          setShowMovieInfo(false)
-          setDisplayedQuote('')
-          setCurrentSilhouette(null)
-          setSvgContent('')
-          
-          // Call parent completion to hide overlay
+          // IMMEDIATELY call onComplete - no complex state clearing
+          console.log('🚨 Calling onComplete() RIGHT NOW')
           onComplete()
-          console.log('🚨 onComplete() called - Easter egg should end NOW')
-        }, 9000) // 2s delay + 7s animation = 9s total
+          console.log('🚨 onComplete() finished - checking if Easter egg is gone...')
+        }, 9000) // 2s delay + 7s animation
       }
       
       startAnimation()
@@ -241,8 +231,6 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         .animate-slow-clockwise-spin { animation: slow-clockwise-spin 7s linear forwards; }
         .animate-slow-counterclockwise-spin { 
           animation: slow-counterclockwise-spin 7s linear forwards;
-          animation-delay: 2s;
-          animation-fill-mode: both;
         }
         .animate-slight-vibration { animation: slight-vibration 7s linear forwards; }
         
