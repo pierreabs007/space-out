@@ -88,21 +88,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     }
   }
 
-  // Typewriter effect for quote - Fixed to prevent character corruption
-  const typewriterEffect = (text: string, delay: number = 80) => {
-    setDisplayedQuote('')
-    let index = 0
-    
-    const type = () => {
-      if (index < text.length) {
-        const char = text.charAt(index)
-        setDisplayedQuote(prevText => prevText + char)
-        index++
-        setTimeout(type, delay)
-      }
-    }
-    
-    setTimeout(type, 1000) // Start typing after 1 second delay
+  // Fade-in effect for quote (replacing typewriter)
+  const fadeInText = (text: string) => {
+    setDisplayedQuote(text) // Set text immediately
   }
 
   // Get CSS animation class based on motion type from JSON
@@ -145,27 +133,26 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         setTimeout(() => {
           console.log('🎬 Starting animation after delay...')
           
-          // Start quote typewriter effect immediately with animation
+          // Start quote fade-in effect immediately with animation
           setShowQuote(true)
-          typewriterEffect(selectedSilhouette.quote)
+          fadeInText(selectedSilhouette.quote)
           
           // SVG animation completes after 7 seconds
           completeTimeoutRef.current = setTimeout(() => {
-            console.log('🎬 SVG exited screen - starting fade out')
+            console.log('🎬 SVG exited screen - hiding text')
             
-            // Step 1: Hide quotes immediately when SVG exits
+            // Step 1: Hide quotes immediately when SVG exits  
             setShowQuote(false)
             
-            // Step 2: FORCE END EVERYTHING
-            console.log('🎬 FORCE ENDING Easter egg - calling onComplete')
-            setIsAnimating(false)
-            setDisplayedQuote('')
-            setCurrentSilhouette(null)
-            setSvgContent('')
+            // Step 2: Wait 2 seconds then return to solar system
             setTimeout(() => {
-              console.log('🎬 CALLING onComplete()')
+              console.log('🎬 Returning to solar system after 2 second delay')
+              setIsAnimating(false)
+              setDisplayedQuote('')
+              setCurrentSilhouette(null)
+              setSvgContent('')
               onComplete()
-            }, 100)
+            }, 2000)
           }, 7000)
           
         }, 1500) // 1.5 second delay before animation starts
@@ -191,40 +178,45 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes slight-bobbing {
-          0% { transform: translateX(-30px) translateY(-50%) scale(0.2); }
-          25% { transform: translateX(25vw) translateY(calc(-50% - 5px)) scale(0.2); }
-          50% { transform: translateX(50vw) translateY(-50%) scale(0.2); }
-          75% { transform: translateX(75vw) translateY(calc(-50% - 3px)) scale(0.2); }
-          100% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.2); }
+          0% { transform: translateX(-30px) translateY(-50%) scale(0.4); }
+          25% { transform: translateX(25vw) translateY(calc(-50% - 5px)) scale(0.4); }
+          50% { transform: translateX(50vw) translateY(-50%) scale(0.4); }
+          75% { transform: translateX(75vw) translateY(calc(-50% - 3px)) scale(0.4); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%) scale(0.4); opacity: 0; }
         }
         
         @keyframes slow-clockwise-spin {
-          0% { transform: translateX(-30px) translateY(-50%) scale(0.2) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.2) rotate(180deg); }
+          0% { transform: translateX(-30px) translateY(-50%) scale(0.4) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%) scale(0.4) rotate(180deg); opacity: 0; }
         }
         
         @keyframes slow-counterclockwise-spin {
-          0% { transform: translateX(-30px) translateY(-50%) scale(0.2) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.2) rotate(-180deg); }
+          0% { transform: translateX(-30px) translateY(-50%) scale(0.4) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%) scale(0.4) rotate(-180deg); opacity: 0; }
         }
         
         @keyframes slight-vibration {
-          0% { transform: translateX(-30px) translateY(-50%) scale(0.2); }
-          10% { transform: translateX(10vw) translateY(calc(-50% - 1px)) scale(0.2); }
-          20% { transform: translateX(20vw) translateY(calc(-50% + 1px)) scale(0.2); }
-          30% { transform: translateX(30vw) translateY(calc(-50% - 1px)) scale(0.2); }
-          40% { transform: translateX(40vw) translateY(calc(-50% + 1px)) scale(0.2); }
-          50% { transform: translateX(50vw) translateY(calc(-50% - 1px)) scale(0.2); }
-          60% { transform: translateX(60vw) translateY(calc(-50% + 1px)) scale(0.2); }
-          70% { transform: translateX(70vw) translateY(calc(-50% - 1px)) scale(0.2); }
-          80% { transform: translateX(80vw) translateY(calc(-50% + 1px)) scale(0.2); }
-          90% { transform: translateX(90vw) translateY(calc(-50% - 1px)) scale(0.2); }
-          100% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.2); }
+          0% { transform: translateX(-30px) translateY(-50%) scale(0.4); }
+          10% { transform: translateX(10vw) translateY(calc(-50% - 1px)) scale(0.4); }
+          20% { transform: translateX(20vw) translateY(calc(-50% + 1px)) scale(0.4); }
+          30% { transform: translateX(30vw) translateY(calc(-50% - 1px)) scale(0.4); }
+          40% { transform: translateX(40vw) translateY(calc(-50% + 1px)) scale(0.4); }
+          50% { transform: translateX(50vw) translateY(calc(-50% - 1px)) scale(0.4); }
+          60% { transform: translateX(60vw) translateY(calc(-50% + 1px)) scale(0.4); }
+          70% { transform: translateX(70vw) translateY(calc(-50% - 1px)) scale(0.4); }
+          80% { transform: translateX(80vw) translateY(calc(-50% + 1px)) scale(0.4); }
+          90% { transform: translateX(90vw) translateY(calc(-50% - 1px)) scale(0.4); }
+          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%) scale(0.4); opacity: 0; }
         }
         
         @keyframes easteregg-fadeout {
           0% { opacity: 1; }
           100% { opacity: 0; }
+        }
+        
+        @keyframes fade-in {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
         }
         
         .animate-slight-bobbing { animation: slight-bobbing 7s ease-in-out forwards; }
@@ -263,15 +255,25 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
         
-        {/* Quote display */}
+        {/* Quote display - Fade in instead of typewriter */}
         {showQuote && (
-          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8">
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8 animate-fade-in">
             <div className="text-center">
-              <p className="text-lg md:text-xl lg:text-2xl text-black typewriter mb-4">
+              <p className="text-lg md:text-xl lg:text-2xl text-black mb-4" style={{ 
+                fontFamily: 'Orbitron, Space Mono, Courier New, monospace',
+                fontWeight: 'bold',
+                letterSpacing: '1px',
+                animation: 'fade-in 0.8s ease-in forwards'
+              }}>
                 {displayedQuote}
               </p>
-              {displayedQuote === currentSilhouette.quote && (
-                <p className="text-sm md:text-base text-black typewriter opacity-80 animate-fade-in">
+              {displayedQuote && (
+                <p className="text-sm md:text-base text-black opacity-80" style={{ 
+                  fontFamily: 'Orbitron, Space Mono, Courier New, monospace',
+                  fontWeight: 'bold',
+                  letterSpacing: '1px',
+                  animation: 'fade-in 1.2s ease-in forwards'
+                }}>
                   {currentSilhouette.movie} ({currentSilhouette.year})
                 </p>
               )}
