@@ -133,9 +133,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // WAIT 1.5 seconds before starting animation
+        // WAIT 1.5 seconds before starting animation (SVG hidden during delay)
         setTimeout(() => {
-          console.log('🎬 Starting animation after delay...')
+          console.log('🎬 Starting animation after 1.5s delay...')
           
           // Start quote fade-in effect immediately with animation
           setShowQuote(true)
@@ -215,10 +215,17 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         }
         
         @keyframes slow-counterclockwise-spin {
-          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); opacity: 1; }
-          90% { transform: translateX(calc(90vw)) translateY(-50%) scale(0.28) rotate(-160deg); opacity: 1; }
-          95% { transform: translateX(calc(100vw + 50px)) translateY(-50%) scale(0.28) rotate(-170deg); opacity: 1; }
-          100% { transform: translateX(calc(100vw + 800px)) translateY(-50%) scale(0.28) rotate(-180deg); opacity: 0; }
+          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
+          10% { transform: translateX(calc(10vw - 50px)) translateY(-50%) scale(0.28) rotate(-18deg); }
+          20% { transform: translateX(calc(20vw - 50px)) translateY(-50%) scale(0.28) rotate(-36deg); }
+          30% { transform: translateX(calc(30vw - 50px)) translateY(-50%) scale(0.28) rotate(-54deg); }
+          40% { transform: translateX(calc(40vw - 50px)) translateY(-50%) scale(0.28) rotate(-72deg); }
+          50% { transform: translateX(calc(50vw - 50px)) translateY(-50%) scale(0.28) rotate(-90deg); }
+          60% { transform: translateX(calc(60vw - 50px)) translateY(-50%) scale(0.28) rotate(-108deg); }
+          70% { transform: translateX(calc(70vw - 50px)) translateY(-50%) scale(0.28) rotate(-126deg); }
+          80% { transform: translateX(calc(80vw - 50px)) translateY(-50%) scale(0.28) rotate(-144deg); }
+          90% { transform: translateX(calc(90vw - 50px)) translateY(-50%) scale(0.28) rotate(-162deg); }
+          100% { transform: translateX(calc(100vw + 200px)) translateY(-50%) scale(0.28) rotate(-180deg); opacity: 0; }
         }
         
         @keyframes slight-vibration {
