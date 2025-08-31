@@ -139,7 +139,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           console.log('🎬 1.5s delay complete - starting SVG and text...')
           
           // Now show SVG (triggers animation) and text
-          setIsAnimating(true)
+          setShowSvg(true)
           setShowQuote(true)
           fadeInText(selectedSilhouette.quote)
           
