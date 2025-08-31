@@ -144,14 +144,17 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
             // Step 1: Hide quotes immediately when SVG exits  
             setShowQuote(false)
             
-            // Step 2: Wait 2 seconds then return to solar system
+            // Step 2: Wait 2 seconds then FORCE return to solar system
             setTimeout(() => {
-              console.log('🎬 Returning to solar system after 2 second delay')
+              console.log('🎬 FORCING return to solar system - clearing ALL state')
               setIsAnimating(false)
+              setShowQuote(false)
               setDisplayedQuote('')
               setCurrentSilhouette(null)
               setSvgContent('')
+              console.log('🎬 About to call onComplete()')
               onComplete()
+              console.log('🎬 onComplete() called - Easter egg should end')
             }, 2000)
           }, 7000)
           
@@ -182,7 +185,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           25% { transform: translateX(25vw) translateY(calc(-50% - 5px)) scale(0.28); }
           50% { transform: translateX(50vw) translateY(-50%) scale(0.28); }
           75% { transform: translateX(75vw) translateY(calc(-50% - 3px)) scale(0.28); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%) scale(0.28); }
+          100% { transform: translateX(calc(100vw + 300px)) translateY(-50%) scale(0.28); }
         }
         
         @keyframes slow-clockwise-spin {
@@ -206,7 +209,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           70% { transform: translateX(70vw) translateY(calc(-50% - 1px)) scale(0.28); }
           80% { transform: translateX(80vw) translateY(calc(-50% + 1px)) scale(0.28); }
           90% { transform: translateX(90vw) translateY(calc(-50% - 1px)) scale(0.28); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%) scale(0.28); }
+          100% { transform: translateX(calc(100vw + 300px)) translateY(-50%) scale(0.28); }
         }
         
         @keyframes easteregg-fadeout {
@@ -237,7 +240,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         style={{ 
           backgroundColor: sunColor,
           width: '100vw',
-          height: '100vh'
+          height: '100vh',
+          overflow: 'hidden' // Force hide anything outside viewport
         }}
       >
         {/* Animated silhouette - MOTION BASED ON JSON */}
