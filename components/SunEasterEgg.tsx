@@ -131,15 +131,10 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // Start text immediately
+        // Start text and SVG immediately (SVG has 2s CSS delay)
         setShowQuote(true)
         fadeInText(selectedSilhouette.quote)
-        
-        // WAIT 2 seconds before showing SVG
-        setTimeout(() => {
-          console.log('🎬 2 second delay complete - showing SVG...')
-          setShowSvg(true)
-        }, 2000)
+        setShowSvg(true) // Show immediately, but animation delays 2s via CSS
         
         // SVG animation completes after 9 seconds total (2s delay + 7s animation)
         completeTimeoutRef.current = setTimeout(() => {
@@ -212,8 +207,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         }
         
         @keyframes slow-counterclockwise-spin {
-          0% { transform: translateX(0px) translateY(-50%) scale(0.28) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 200px)) translateY(-50%) scale(0.28) rotate(-180deg); display: none; }
+          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 300px)) translateY(-50%) scale(0.28) rotate(-180deg); }
         }
         
         @keyframes slight-vibration {
@@ -244,7 +239,21 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         
         .animate-slight-bobbing { animation: slight-bobbing 7s linear forwards; }
         .animate-slow-clockwise-spin { animation: slow-clockwise-spin 7s linear forwards; }
-        .animate-slow-counterclockwise-spin { animation: slow-counterclockwise-spin 7s linear forwards; }
+        .animate-slow-counterclockwise-spin { 
+          animation: slow-counterclockwise-spin 7s linear forwards; 
+          animation-delay: 2s;
+          opacity: 0;
+          animation-fill-mode: both;
+        }
+        
+        .animate-slow-counterclockwise-spin:nth-child(1) {
+          animation-name: slow-counterclockwise-spin;
+          animation-duration: 7s;
+          animation-timing-function: linear;
+          animation-delay: 2s;
+          animation-fill-mode: both;
+          opacity: 1;
+        }
         .animate-slight-vibration { animation: slight-vibration 7s linear forwards; }
         
         .typewriter {
