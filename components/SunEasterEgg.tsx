@@ -134,14 +134,13 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // WAIT 2 seconds before showing SVG (text can start earlier)
+        // Start text immediately, SVG after 2 second delay
         setShowQuote(true)
         fadeInText(selectedSilhouette.quote)
         
         setTimeout(() => {
           console.log('🎬 2 second delay complete - showing SVG...')
           setShowSvg(true)
-        }, 2000)
           
           // SVG animation completes after 7 seconds
           completeTimeoutRef.current = setTimeout(() => {
@@ -172,8 +171,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
               }, 100)
             }, 2000)
           }, 7000) // 7s animation duration
-          
-        }, 0) // Text starts immediately, SVG delayed by 2s above
+        }, 2000) // 2s delay before SVG appears
       }
       
       startAnimation()
