@@ -1379,7 +1379,11 @@ function CameraSystem({
   easterEggDelayTimer,
   setEasterEggDelayTimer,
   easterEggActive,
-  easterEggCooldown
+  easterEggCooldown,
+  cameraFrozen,
+  setCameraFrozen,
+  frozenCameraPosition,
+  setFrozenCameraPosition
 }: { 
   automaticMode: boolean, 
   speed: number,
@@ -1389,7 +1393,11 @@ function CameraSystem({
   easterEggDelayTimer: NodeJS.Timeout | null,
   setEasterEggDelayTimer: (timer: NodeJS.Timeout | null) => void,
   easterEggActive: boolean,
-  easterEggCooldown: boolean
+  easterEggCooldown: boolean,
+  cameraFrozen: boolean,
+  setCameraFrozen: (frozen: boolean) => void,
+  frozenCameraPosition: {x: number, y: number, z: number} | null,
+  setFrozenCameraPosition: (pos: {x: number, y: number, z: number} | null) => void
 }) {
   const { camera } = useThree()
   const orbitControlsRef = useRef<any>(null)
@@ -1425,6 +1433,13 @@ function CameraSystem({
   }, [])
   
   useFrame((state) => {
+    // Check if camera should be frozen for Easter egg
+    if (cameraFrozen && frozenCameraPosition) {
+      camera.position.set(frozenCameraPosition.x, frozenCameraPosition.y, frozenCameraPosition.z)
+      camera.lookAt(0, 0, 0)
+      return // Skip normal camera movement
+    }
+    
     if (automaticMode) {
       // AUTOMATIC MODE: Camera moves, no manual controls
       const time = state.clock.elapsedTime * speed
@@ -1511,24 +1526,25 @@ function CameraSystem({
     const cameraPosition = camera.position
     const distanceToSun = cameraPosition.distanceTo(sunPosition)
     
-    // Easter egg distance detection with 2-second hold delay
+    // Easter egg detection: Sun fills screen at ~7 units from center (radius=4, FOV=60°)
+    const optimalDistance = 7 // Distance where sun fills most of screen
     console.log('🔍 Distance to sun:', distanceToSun.toFixed(2))
-    if (distanceToSun <= 6) {
-      if (!easterEggDelayTimer && !easterEggActive && !easterEggCooldown) {
-        console.log('🌟 Close to sun detected - starting 2s delay timer...')
+    
+    if (distanceToSun <= optimalDistance) {
+      if (!easterEggDelayTimer && !easterEggActive && !easterEggCooldown && !cameraFrozen) {
+        console.log('🌟 Optimal distance reached - freezing camera and starting 2s timer...')
+        
+        // Freeze camera at current position
+        setCameraFrozen(true)
+        setFrozenCameraPosition({ x: cameraPosition.x, y: cameraPosition.y, z: cameraPosition.z })
+        
+        // Start 2-second delay timer
         const timer = setTimeout(() => {
-          console.log('🚨 2-second delay complete - triggering Easter egg!')
+          console.log('🚨 2-second hold complete - triggering Easter egg!')
           onEasterEggTrigger()
           setEasterEggDelayTimer(null)
         }, 2000)
         setEasterEggDelayTimer(timer)
-      }
-    } else {
-      // If we move away from sun before delay completes, cancel timer
-      if (easterEggDelayTimer) {
-        console.log('🔍 Moved away from sun - canceling delay timer')
-        clearTimeout(easterEggDelayTimer)
-        setEasterEggDelayTimer(null)
       }
     }
   })
@@ -1570,6 +1586,8 @@ function SolarSystemEnhanced() {
   const [easterEggActive, setEasterEggActive] = useState(false)
   const [easterEggCooldown, setEasterEggCooldown] = useState(false)
   const [easterEggDelayTimer, setEasterEggDelayTimer] = useState<NodeJS.Timeout | null>(null)
+  const [cameraFrozen, setCameraFrozen] = useState(false)
+  const [frozenCameraPosition, setFrozenCameraPosition] = useState<{x: number, y: number, z: number} | null>(null)
   
   // Easter egg handlers
   const handleEasterEggTrigger = () => {
@@ -1590,7 +1608,7 @@ function SolarSystemEnhanced() {
   }
   
   const handleEasterEggComplete = () => {
-    console.log('🚨 Easter egg complete - moving camera back and hiding overlay')
+    console.log('🚨 Easter egg complete - unfreezing camera and moving back')
     setEasterEggActive(false)
     setEasterEggCooldown(true)
     
@@ -1600,8 +1618,9 @@ function SolarSystemEnhanced() {
       setEasterEggDelayTimer(null)
     }
     
-    // TODO: Move camera to safe distance from sun (25+ units away)
-    // This prevents immediate retriggering
+    // Unfreeze camera and move it to safe distance
+    setCameraFrozen(false)
+    setFrozenCameraPosition(null)
     
     // Reset cooldown after delay
     setTimeout(() => {
@@ -2238,6 +2257,10 @@ function SolarSystemEnhanced() {
           setEasterEggDelayTimer={setEasterEggDelayTimer}
           easterEggActive={easterEggActive}
           easterEggCooldown={easterEggCooldown}
+          cameraFrozen={cameraFrozen}
+          setCameraFrozen={setCameraFrozen}
+          frozenCameraPosition={frozenCameraPosition}
+          setFrozenCameraPosition={setFrozenCameraPosition}
         />
         
         {/* Enhanced Lighting */}
