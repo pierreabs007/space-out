@@ -26,6 +26,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
   const [isAnimating, setIsAnimating] = useState(false)
   const [showSvg, setShowSvg] = useState(false)
   const [startAnimation, setStartAnimation] = useState(false)
+  const [showMovieInfo, setShowMovieInfo] = useState(false)
   const [rotationDirection, setRotationDirection] = useState<'cw' | 'ccw'>('cw')
   const animationRef = useRef<HTMLDivElement>(null)
   const quoteTimeoutRef = useRef<NodeJS.Timeout>()
@@ -286,24 +287,29 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
         
-        {/* Quote display - Fade in instead of typewriter */}
+        {/* Quote display - Only show movie info on hover */}
         {showQuote && (
-          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8 animate-fade-in">
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8">
             <div className="text-center">
-              <p className="text-lg md:text-xl lg:text-2xl text-black mb-4" style={{ 
-                fontFamily: 'Orbitron, Space Mono, Courier New, monospace',
-                fontWeight: 'bold',
-                letterSpacing: '1px',
-                animation: 'fade-in 0.8s ease-in forwards'
-              }}>
+              <p 
+                className="text-lg md:text-xl lg:text-2xl text-black mb-4 cursor-pointer" 
+                style={{ 
+                  fontFamily: 'Orbitron, Space Mono, Courier New, monospace',
+                  fontWeight: 'bold',
+                  letterSpacing: '1px',
+                  animation: 'fade-in 0.8s ease-in forwards'
+                }}
+                onMouseEnter={() => setShowMovieInfo(true)}
+                onMouseLeave={() => setShowMovieInfo(false)}
+              >
                 {displayedQuote}
               </p>
-              {displayedQuote && (
+              {showMovieInfo && displayedQuote && (
                 <p className="text-sm md:text-base text-black opacity-80" style={{ 
                   fontFamily: 'Orbitron, Space Mono, Courier New, monospace',
                   fontWeight: 'bold',
                   letterSpacing: '1px',
-                  animation: 'fade-in 1.2s ease-in forwards'
+                  animation: 'fade-in 0.5s ease-in forwards'
                 }}>
                   {currentSilhouette.movie} ({currentSilhouette.year})
                 </p>
