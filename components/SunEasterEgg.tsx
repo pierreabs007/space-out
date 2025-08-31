@@ -144,15 +144,11 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           setStartAnimation(true)
         }, 2000)
         
-        // Animation completes after 9 seconds (2s delay + 7s animation)
+        // Animation completes after 7 seconds
         setTimeout(() => {
-          console.log('🚨🚨🚨 ANIMATION COMPLETE TIMEOUT FIRED!')
-          
-          // IMMEDIATELY call onComplete - no complex state clearing
-          console.log('🚨 Calling onComplete() RIGHT NOW')
+          console.log('🚨 Animation complete - calling onComplete()')
           onComplete()
-          console.log('🚨 onComplete() finished - checking if Easter egg is gone...')
-        }, 9000) // 2s delay + 7s animation
+        }, 7000) // 7s animation only
       }
       
       startAnimation()

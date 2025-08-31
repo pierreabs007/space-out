@@ -1533,18 +1533,18 @@ function CameraSystem({
     
     if (distanceToSun <= optimalDistance) {
       if (!easterEggDelayTimer && !easterEggActive && !easterEggCooldown && !cameraFrozen) {
-        console.log('🌟 Optimal distance reached - freezing camera and starting 2s timer...')
+        console.log('🌟 Optimal distance reached - freezing camera and starting 1s timer...')
         
         // Freeze camera at current position
         setCameraFrozen(true)
         setFrozenCameraPosition({ x: cameraPosition.x, y: cameraPosition.y, z: cameraPosition.z })
         
-        // Start 2-second delay timer
+        // Start 1-second delay timer
         const timer = setTimeout(() => {
-          console.log('🚨 2-second hold complete - triggering Easter egg!')
+          console.log('🚨 1-second hold complete - triggering Easter egg!')
           onEasterEggTrigger()
           setEasterEggDelayTimer(null)
-        }, 2000)
+        }, 1000)
         setEasterEggDelayTimer(timer)
       }
     }
@@ -1623,10 +1623,10 @@ function SolarSystemEnhanced() {
     setCameraFrozen(false)
     setFrozenCameraPosition(null)
     
-    // Reset cooldown after delay
+    // Long cooldown after completion
     setTimeout(() => {
       setEasterEggCooldown(false)
-    }, 5000)
+    }, 10000) // 10 second cooldown after completion
   }
 
   // Keyboard controls for camera movement and mode switching
