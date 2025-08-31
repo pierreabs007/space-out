@@ -25,6 +25,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
   const [displayedQuote, setDisplayedQuote] = useState('')
   const [isAnimating, setIsAnimating] = useState(false)
   const [showSvg, setShowSvg] = useState(false)
+  const [startAnimation, setStartAnimation] = useState(false)
   const [rotationDirection, setRotationDirection] = useState<'cw' | 'ccw'>('cw')
   const animationRef = useRef<HTMLDivElement>(null)
   const quoteTimeoutRef = useRef<NodeJS.Timeout>()
@@ -131,10 +132,16 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // Start text and SVG immediately (SVG has 2s CSS delay)
+        // Start text immediately, show SVG after 2s delay
         setShowQuote(true)
         fadeInText(selectedSilhouette.quote)
-        setShowSvg(true) // Show immediately, but animation delays 2s via CSS
+        setShowSvg(true) // Show SVG element (but no animation class yet)
+        
+        // Start animation after 2 seconds
+        setTimeout(() => {
+          console.log('🎬 2s delay complete - starting SVG animation...')
+          setStartAnimation(true)
+        }, 2000)
         
         // SVG animation completes after 9 seconds total (2s delay + 7s animation)
         completeTimeoutRef.current = setTimeout(() => {
@@ -149,6 +156,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
             
             // Clear local state immediately
             setIsAnimating(false)
+            setStartAnimation(false)
             setShowSvg(false)
             setShowQuote(false) 
             setDisplayedQuote('')
@@ -240,16 +248,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         .animate-slight-bobbing { animation: slight-bobbing 7s linear forwards; }
         .animate-slow-clockwise-spin { animation: slow-clockwise-spin 7s linear forwards; }
         .animate-slow-counterclockwise-spin { 
-          animation: slow-counterclockwise-spin 7s linear 2s forwards;
-          opacity: 0;
-        }
-        
-        .animate-slow-counterclockwise-spin {
-          animation-name: slow-counterclockwise-spin;
-          animation-duration: 7s;
-          animation-timing-function: linear;
-          animation-delay: 2s;
-          animation-fill-mode: both;
+          animation: slow-counterclockwise-spin 7s linear forwards;
         }
         .animate-slight-vibration { animation: slight-vibration 7s linear forwards; }
         
