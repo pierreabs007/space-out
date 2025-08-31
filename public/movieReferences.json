@@ -7,7 +7,7 @@
       "quote": "Beam me up, Scotty!",
       "movie": "Star Trek",
       "year": 1979,
-      "motion": "steady horizontal glide"
+      "motion": "slight up and down bobbing"
     },
     {
       "id": "millennium_falcon",
@@ -25,7 +25,7 @@
       "quote": "In space, no one can hear you scream",
       "movie": "Alien",
       "year": 1979,
-      "motion": "slow clockwise rotation"
+      "motion": "slow clockwise spin"
     },
     {
       "id": "apollo_13",
@@ -34,7 +34,7 @@
       "quote": "Houston, we have a problem",
       "movie": "Apollo 13",
       "year": 1995,
-      "motion": "slow side-to-side wobble"
+      "motion": "slow clockwise spin"
     },
     {
       "id": "discovery_one",
@@ -43,7 +43,7 @@
       "quote": "I'm sorry Dave, I'm afraid I can't do that",
       "movie": "2001: A Space Odyssey",
       "year": 1968,
-      "motion": "very slow clockwise rotation"
+      "motion": "slight up and down bobbing"
     },
     {
       "id": "delorean",
@@ -61,7 +61,7 @@
       "quote": "I hate space",
       "movie": "Gravity",
       "year": 2013,
-      "motion": "slow counterclockwise rotation"
+      "motion": "slow counterclockwise spin"
     },
     {
       "id": "eagle_5",
@@ -70,7 +70,7 @@
       "quote": "May the Schwartz be with you",
       "movie": "Spaceballs",
       "year": 1987,
-      "motion": "bumpy up and down motion"
+      "motion": "slight up and down bobbing"
     },
     {
       "id": "planet_express",
@@ -79,7 +79,7 @@
       "quote": "Good news, everyone!",
       "movie": "Futurama",
       "year": 1999,
-      "motion": "quick up and down wobble"
+      "motion": "slight up and down bobbing"
     },
     {
       "id": "little_prince",
@@ -88,7 +88,7 @@
       "quote": "What is essential is invisible to the eye",
       "movie": "The Little Prince",
       "year": 2015,
-      "motion": "gentle floating up and down"
+      "motion": "slow counterclockwise spin"
     }
   ]
 }

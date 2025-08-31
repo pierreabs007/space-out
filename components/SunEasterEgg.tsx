@@ -105,9 +105,20 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     setTimeout(type, 1000) // Start typing after 1 second delay
   }
 
-  // All animations now use simple straight line motion
+  // Get CSS animation class based on motion type from JSON
   const getMotionClass = (motion: string): string => {
-    return 'animate-straight-line'
+    switch (motion) {
+      case 'slight up and down bobbing':
+        return 'animate-slight-bobbing'
+      case 'slow clockwise spin':
+        return 'animate-slow-clockwise-spin' 
+      case 'slow counterclockwise spin':
+        return 'animate-slow-counterclockwise-spin'
+      case 'slight vibration':
+        return 'animate-slight-vibration'
+      default:
+        return 'animate-slight-bobbing' // Default fallback
+    }
   }
 
   // Start the Easter egg animation
@@ -134,9 +145,11 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         setTimeout(() => {
           console.log('🎬 Starting animation after delay...')
           
-          // Start quote typewriter effect
-          setShowQuote(true)
-          typewriterEffect(selectedSilhouette.quote)
+          // Start quote typewriter effect after 0.5 second delay
+          setTimeout(() => {
+            setShowQuote(true)
+            typewriterEffect(selectedSilhouette.quote)
+          }, 500)
           
           // SVG animation completes after 7 seconds
           completeTimeoutRef.current = setTimeout(() => {
@@ -179,15 +192,47 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     <>
       {/* Custom CSS animations */}
       <style jsx>{`
-        @keyframes simple-left-to-right {
-          0% { transform: translateX(0px) translateY(-50%) scale(0.1); }
-          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.1); }
+        @keyframes slight-bobbing {
+          0% { transform: translateX(0px) translateY(-50%) scale(0.2); }
+          25% { transform: translateX(25vw) translateY(calc(-50% - 5px)) scale(0.2); }
+          50% { transform: translateX(50vw) translateY(-50%) scale(0.2); }
+          75% { transform: translateX(75vw) translateY(calc(-50% - 3px)) scale(0.2); }
+          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.2); }
+        }
+        
+        @keyframes slow-clockwise-spin {
+          0% { transform: translateX(0px) translateY(-50%) scale(0.2) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.2) rotate(180deg); }
+        }
+        
+        @keyframes slow-counterclockwise-spin {
+          0% { transform: translateX(0px) translateY(-50%) scale(0.2) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.2) rotate(-180deg); }
+        }
+        
+        @keyframes slight-vibration {
+          0% { transform: translateX(0px) translateY(-50%) scale(0.2); }
+          10% { transform: translateX(10vw) translateY(calc(-50% - 1px)) scale(0.2); }
+          20% { transform: translateX(20vw) translateY(calc(-50% + 1px)) scale(0.2); }
+          30% { transform: translateX(30vw) translateY(calc(-50% - 1px)) scale(0.2); }
+          40% { transform: translateX(40vw) translateY(calc(-50% + 1px)) scale(0.2); }
+          50% { transform: translateX(50vw) translateY(calc(-50% - 1px)) scale(0.2); }
+          60% { transform: translateX(60vw) translateY(calc(-50% + 1px)) scale(0.2); }
+          70% { transform: translateX(70vw) translateY(calc(-50% - 1px)) scale(0.2); }
+          80% { transform: translateX(80vw) translateY(calc(-50% + 1px)) scale(0.2); }
+          90% { transform: translateX(90vw) translateY(calc(-50% - 1px)) scale(0.2); }
+          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.2); }
         }
         
         @keyframes easteregg-fadeout {
           0% { opacity: 1; }
           100% { opacity: 0; }
         }
+        
+        .animate-slight-bobbing { animation: slight-bobbing 7s ease-in-out forwards; }
+        .animate-slow-clockwise-spin { animation: slow-clockwise-spin 7s linear forwards; }
+        .animate-slow-counterclockwise-spin { animation: slow-counterclockwise-spin 7s linear forwards; }
+        .animate-slight-vibration { animation: slight-vibration 7s linear forwards; }
         
         .typewriter {
           font-family: 'Orbitron', 'Space Mono', 'Courier New', monospace;
@@ -205,17 +250,17 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           height: '100vh'
         }}
       >
-        {/* Animated silhouette - SCALE IN ANIMATION */}
+        {/* Animated silhouette - MOTION BASED ON JSON */}
         <div
           ref={animationRef}
+          className={getMotionClass(currentSilhouette.motion)}
           style={{ 
             position: 'fixed',
             width: '50px',
             height: '50px',
             left: '-30px', 
             top: '50%',
-            zIndex: 9999,
-            animation: 'simple-left-to-right 7s linear forwards'
+            zIndex: 9999
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
@@ -224,11 +269,11 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         {showQuote && (
           <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8">
             <div className="text-center">
-              <p className="text-2xl md:text-3xl lg:text-4xl text-black typewriter mb-4">
+              <p className="text-lg md:text-xl lg:text-2xl text-black typewriter mb-4">
                 {displayedQuote}
               </p>
               {displayedQuote === currentSilhouette.quote && (
-                <p className="text-lg md:text-xl text-black typewriter opacity-80 animate-fade-in">
+                <p className="text-sm md:text-base text-black typewriter opacity-80 animate-fade-in">
                   {currentSilhouette.movie} ({currentSilhouette.year})
                 </p>
               )}
