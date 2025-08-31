@@ -24,6 +24,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
   const [showQuote, setShowQuote] = useState(false)
   const [displayedQuote, setDisplayedQuote] = useState('')
   const [isAnimating, setIsAnimating] = useState(false)
+  const [showSvg, setShowSvg] = useState(false)
   const [rotationDirection, setRotationDirection] = useState<'cw' | 'ccw'>('cw')
   const animationRef = useRef<HTMLDivElement>(null)
   const quoteTimeoutRef = useRef<NodeJS.Timeout>()
@@ -133,13 +134,14 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // Start text immediately (SVG will be delayed by CSS)
-        setShowQuote(true)
-        fadeInText(selectedSilhouette.quote)
-        
-        // Animation timing (SVG starts after 1.5s CSS delay)
+        // WAIT 1.5 seconds before showing SVG and text
         setTimeout(() => {
-          console.log('🎬 SVG animation should have started (with 1.5s CSS delay)...')
+          console.log('🎬 1.5s delay complete - starting SVG and text...')
+          
+          // Now show SVG (triggers animation) and text
+          setIsAnimating(true)
+          setShowQuote(true)
+          fadeInText(selectedSilhouette.quote)
           
           // SVG animation completes after 7 seconds
           completeTimeoutRef.current = setTimeout(() => {
@@ -168,9 +170,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
                 console.log('🚨 onComplete() called - Easter egg should be hidden now')
               }, 100)
             }, 2000)
-          }, 8500) // 7s animation + 1.5s delay
+          }, 7000) // 7s animation duration
           
-        }, 0) // Start immediately, SVG has CSS delay
+        }, 1500) // 1.5s delay before SVG appears
       }
       
       startAnimation()
