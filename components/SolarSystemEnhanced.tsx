@@ -1526,8 +1526,9 @@ function CameraSystem({
     const cameraPosition = camera.position
     const distanceToSun = cameraPosition.distanceTo(sunPosition)
     
-    // Easter egg detection: Sun fills screen at ~7 units from center (radius=4, FOV=60°)
-    const optimalDistance = 7 // Distance where sun fills most of screen
+    // Easter egg detection: Sun completely fills screen at closer distance
+    // With sun radius=4 and FOV=60°, for 100% screen fill we need distance ≈ 5
+    const optimalDistance = 5 // Distance where sun fills 100% of screen
     console.log('🔍 Distance to sun:', distanceToSun.toFixed(2))
     
     if (distanceToSun <= optimalDistance) {
