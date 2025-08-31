@@ -1582,18 +1582,23 @@ function SolarSystemEnhanced() {
   }
   
   const handleEasterEggComplete = () => {
-    console.log('🚨 handleEasterEggComplete CALLED!')
+    console.log('🚨 Easter egg complete - moving camera back and hiding overlay')
     setEasterEggActive(false)
     setEasterEggCooldown(true)
     
-    // Move camera back from sun to prevent immediate retriggering
-    // This will be handled by camera system - set a flag
-    console.log('🚨 Easter egg ended - should move camera away from sun')
+    // Clear any pending delay timer
+    if (easterEggDelayTimer) {
+      clearTimeout(easterEggDelayTimer)
+      setEasterEggDelayTimer(null)
+    }
     
-    // Reset cooldown after longer delay
+    // TODO: Move camera to safe distance from sun (25+ units away)
+    // This prevents immediate retriggering
+    
+    // Reset cooldown after delay
     setTimeout(() => {
       setEasterEggCooldown(false)
-    }, 10000) // 10 second cooldown
+    }, 5000)
   }
 
   // Keyboard controls for camera movement and mode switching
