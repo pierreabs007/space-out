@@ -127,51 +127,47 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         setCurrentSilhouette(selectedSilhouette)
         console.log('🎬 Final selected silhouette:', selectedSilhouette.name, selectedSilhouette.id)
         
-        // Choose rotation direction ONCE when animation starts
-        setRotationDirection(Math.random() > 0.5 ? 'cw' : 'ccw')
-        
         // Load SVG content
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // Start text immediately, SVG after 2 second delay
+        // Start text immediately
         setShowQuote(true)
         fadeInText(selectedSilhouette.quote)
         
+        // WAIT 2 seconds before showing SVG
         setTimeout(() => {
           console.log('🎬 2 second delay complete - showing SVG...')
           setShowSvg(true)
+        }, 2000)
+        
+        // SVG animation completes after 9 seconds total (2s delay + 7s animation)
+        completeTimeoutRef.current = setTimeout(() => {
+          console.log('🎬 SVG exited screen - hiding text')
           
-          // SVG animation completes after 7 seconds
-          completeTimeoutRef.current = setTimeout(() => {
-            console.log('🎬 SVG exited screen - hiding text')
+          // Step 1: Hide quotes immediately when SVG exits  
+          setShowQuote(false)
+          
+          // Step 2: Wait 2 seconds then FORCE return to solar system
+          setTimeout(() => {
+            console.log('🎬 FORCING return to solar system - clearing state FIRST')
             
-            // Step 1: Hide quotes immediately when SVG exits  
-            setShowQuote(false)
+            // Clear local state immediately
+            setIsAnimating(false)
+            setShowSvg(false)
+            setShowQuote(false) 
+            setDisplayedQuote('')
+            setCurrentSilhouette(null)
+            setSvgContent('')
             
-            // Step 2: Wait 2 seconds then FORCE return to solar system
+            // THEN call parent completion (this should hide the overlay)
             setTimeout(() => {
-              console.log('🎬 FORCING return to solar system - clearing state FIRST')
-              
-              // Clear local state immediately
-              setIsAnimating(false)
-              setShowSvg(false)
-              setShowQuote(false) 
-              setDisplayedQuote('')
-              setCurrentSilhouette(null)
-              setSvgContent('')
-              
-              // THEN call parent completion (this should hide the overlay)
-              setTimeout(() => {
-                console.log('🚨 About to call onComplete() - this should end Easter egg!')
-                console.log('🚨 Current isAnimating:', isAnimating)
-                console.log('🚨 Current currentSilhouette:', currentSilhouette?.name)
-                onComplete()
-                console.log('🚨 onComplete() called - Easter egg should be hidden now')
-              }, 100)
-            }, 2000)
-          }, 7000) // 7s animation duration
-        }, 2000) // 2s delay before SVG appears
+              console.log('🚨 About to call onComplete() - this should end Easter egg!')
+              onComplete()
+              console.log('🚨 onComplete() called - Easter egg should be hidden now')
+            }, 100)
+          }, 2000)
+        }, 9000) // 2s delay + 7s animation = 9s total
       }
       
       startAnimation()
@@ -217,17 +213,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         
         @keyframes slow-counterclockwise-spin {
           0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
-          10% { transform: translateX(calc(10vw - 50px)) translateY(-50%) scale(0.28) rotate(-18deg); }
-          20% { transform: translateX(calc(20vw - 50px)) translateY(-50%) scale(0.28) rotate(-36deg); }
-          30% { transform: translateX(calc(30vw - 50px)) translateY(-50%) scale(0.28) rotate(-54deg); }
-          40% { transform: translateX(calc(40vw - 50px)) translateY(-50%) scale(0.28) rotate(-72deg); }
-          50% { transform: translateX(calc(50vw - 50px)) translateY(-50%) scale(0.28) rotate(-90deg); }
-          60% { transform: translateX(calc(60vw - 50px)) translateY(-50%) scale(0.28) rotate(-108deg); }
-          70% { transform: translateX(calc(70vw - 50px)) translateY(-50%) scale(0.28) rotate(-126deg); }
-          80% { transform: translateX(calc(80vw - 50px)) translateY(-50%) scale(0.28) rotate(-144deg); }
-          90% { transform: translateX(calc(90vw - 50px)) translateY(-50%) scale(0.28) rotate(-162deg); }
-          95% { transform: translateX(calc(95vw - 50px)) translateY(-50%) scale(0.28) rotate(-171deg); }
-          100% { transform: translateX(calc(100vw + 50px)) translateY(-50%) scale(0.28) rotate(-180deg); }
+          100% { transform: translateX(calc(120vw)) translateY(-50%) scale(0.28) rotate(-180deg); }
         }
         
         @keyframes slight-vibration {
