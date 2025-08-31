@@ -130,8 +130,13 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const silhouettes = await loadMovieReferences()
         if (silhouettes.length === 0) return
         
+        // Clear localStorage for testing (remove after debugging)
+        localStorage.removeItem('shownSilhouettes')
+        console.log('🎬 Cleared localStorage for fresh selection')
+        
         const selectedSilhouette = getNextSilhouette(silhouettes)
         setCurrentSilhouette(selectedSilhouette)
+        console.log('🎬 Final selected silhouette:', selectedSilhouette.name, selectedSilhouette.id)
         
         // Choose rotation direction ONCE when animation starts
         setRotationDirection(Math.random() > 0.5 ? 'cw' : 'ccw')
