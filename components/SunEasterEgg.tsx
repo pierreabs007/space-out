@@ -146,15 +146,20 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
             
             // Step 2: Wait 2 seconds then FORCE return to solar system
             setTimeout(() => {
-              console.log('🎬 FORCING return to solar system - clearing ALL state')
+              console.log('🎬 FORCING return to solar system - clearing state FIRST')
+              
+              // Clear local state immediately
               setIsAnimating(false)
-              setShowQuote(false)
+              setShowQuote(false) 
               setDisplayedQuote('')
               setCurrentSilhouette(null)
               setSvgContent('')
-              console.log('🎬 About to call onComplete()')
-              onComplete()
-              console.log('🎬 onComplete() called - Easter egg should end')
+              
+              // THEN call parent completion (this should hide the overlay)
+              setTimeout(() => {
+                console.log('🎬 Calling onComplete() to hide Easter egg overlay')
+                onComplete()
+              }, 100)
             }, 2000)
           }, 7000)
           
@@ -181,7 +186,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes slight-bobbing {
-          0% { transform: translateX(-30px) translateY(-50%) scale(0.28); }
+          0% { transform: translateX(-50px) translateY(-50%) scale(0.28); }
           25% { transform: translateX(25vw) translateY(calc(-50% - 5px)) scale(0.28); }
           50% { transform: translateX(50vw) translateY(-50%) scale(0.28); }
           75% { transform: translateX(75vw) translateY(calc(-50% - 3px)) scale(0.28); }
@@ -199,7 +204,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         }
         
         @keyframes slight-vibration {
-          0% { transform: translateX(-30px) translateY(-50%) scale(0.28); }
+          0% { transform: translateX(-50px) translateY(-50%) scale(0.28); }
           10% { transform: translateX(10vw) translateY(calc(-50% - 1px)) scale(0.28); }
           20% { transform: translateX(20vw) translateY(calc(-50% + 1px)) scale(0.28); }
           30% { transform: translateX(30vw) translateY(calc(-50% - 1px)) scale(0.28); }
@@ -244,7 +249,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           overflow: 'hidden' // Force hide anything outside viewport
         }}
       >
-        {/* Animated silhouette - MOTION BASED ON JSON */}
+        {/* Animated silhouette - FORCE OFF-SCREEN EXIT */}
         <div
           ref={animationRef}
           className={getMotionClass(currentSilhouette.motion)}
@@ -252,9 +257,11 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
             position: 'fixed',
             width: '50px',
             height: '50px',
-            left: '-30px', 
+            left: '-50px', // Start further left
             top: '50%',
-            zIndex: 9999
+            zIndex: 9999,
+            margin: 0,
+            padding: 0
           }}
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
