@@ -7,7 +7,7 @@
       "quote": "Beam me up, Scotty!",
       "movie": "Star Trek",
       "year": 1979,
-      "motion": "slight up and down bobbing"
+      "motion": "floating up and down"
     },
     {
       "id": "millennium_falcon",
@@ -16,7 +16,7 @@
       "quote": "Never tell me the odds!",
       "movie": "Star Wars",
       "year": 1977,
-      "motion": "slight up and down bobbing"
+      "motion": "floating up and down"
     },
     {
       "id": "xenomorph",
@@ -43,7 +43,7 @@
       "quote": "I'm sorry Dave, I'm afraid I can't do that",
       "movie": "2001: A Space Odyssey",
       "year": 1968,
-      "motion": "slight up and down bobbing"
+      "motion": "floating up and down"
     },
     {
       "id": "delorean",
@@ -70,7 +70,7 @@
       "quote": "May the Schwartz be with you",
       "movie": "Spaceballs",
       "year": 1987,
-      "motion": "slight up and down bobbing"
+      "motion": "floating up and down"
     },
     {
       "id": "planet_express",
@@ -79,7 +79,7 @@
       "quote": "Good news, everyone!",
       "movie": "Futurama",
       "year": 1999,
-      "motion": "slight up and down bobbing"
+      "motion": "floating up and down"
     },
     {
       "id": "little_prince",

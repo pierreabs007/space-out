@@ -186,11 +186,17 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes slight-bobbing {
-          0% { transform: translateX(-50px) translateY(-50%) scale(0.28); }
-          25% { transform: translateX(25vw) translateY(calc(-50% - 5px)) scale(0.28); }
-          50% { transform: translateX(50vw) translateY(-50%) scale(0.28); }
-          75% { transform: translateX(75vw) translateY(calc(-50% - 3px)) scale(0.28); }
-          100% { transform: translateX(calc(100vw + 300px)) translateY(-50%) scale(0.28); }
+          0% { transform: translateX(-50px) translateY(calc(-50% + 0px)) scale(0.28); }
+          10% { transform: translateX(calc(10vw - 50px)) translateY(calc(-50% - 2px)) scale(0.28); }
+          20% { transform: translateX(calc(20vw - 50px)) translateY(calc(-50% - 3px)) scale(0.28); }
+          30% { transform: translateX(calc(30vw - 50px)) translateY(calc(-50% - 2px)) scale(0.28); }
+          40% { transform: translateX(calc(40vw - 50px)) translateY(calc(-50% + 0px)) scale(0.28); }
+          50% { transform: translateX(calc(50vw - 50px)) translateY(calc(-50% + 2px)) scale(0.28); }
+          60% { transform: translateX(calc(60vw - 50px)) translateY(calc(-50% + 3px)) scale(0.28); }
+          70% { transform: translateX(calc(70vw - 50px)) translateY(calc(-50% + 2px)) scale(0.28); }
+          80% { transform: translateX(calc(80vw - 50px)) translateY(calc(-50% + 0px)) scale(0.28); }
+          90% { transform: translateX(calc(90vw - 50px)) translateY(calc(-50% - 2px)) scale(0.28); }
+          100% { transform: translateX(calc(100vw + 300px)) translateY(calc(-50% + 0px)) scale(0.28); }
         }
         
         @keyframes slow-clockwise-spin {
@@ -227,7 +233,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           100% { opacity: 1; }
         }
         
-        .animate-slight-bobbing { animation: slight-bobbing 7s ease-in-out forwards; }
+        .animate-slight-bobbing { animation: slight-bobbing 7s linear forwards; }
         .animate-slow-clockwise-spin { animation: slow-clockwise-spin 7s linear forwards; }
         .animate-slow-counterclockwise-spin { animation: slow-counterclockwise-spin 7s linear forwards; }
         .animate-slight-vibration { animation: slight-vibration 7s linear forwards; }
