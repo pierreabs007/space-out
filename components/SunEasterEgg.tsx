@@ -288,7 +288,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           dangerouslySetInnerHTML={{ __html: svgContent }}
         />
         
-        {/* Quote display - Only show movie info on hover */}
+        {/* Quote display - Movie info hidden by default, shows on hover */}
         {showQuote && (
           <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8">
             <div className="text-center">
@@ -301,20 +301,23 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
                   animation: 'fade-in 0.8s ease-in forwards'
                 }}
                 onMouseEnter={() => setShowMovieInfo(true)}
-                onMouseLeave={() => setShowMovieInfo(false)}
               >
                 {displayedQuote}
               </p>
-              {showMovieInfo && displayedQuote && (
-                <p className="text-sm md:text-base text-black opacity-80" style={{ 
+              {/* Movie info always rendered but hidden/visible based on hover */}
+              <p 
+                className="text-sm md:text-base text-black"
+                style={{ 
                   fontFamily: 'Orbitron, Space Mono, Courier New, monospace',
                   fontWeight: 'bold',
                   letterSpacing: '1px',
-                  animation: 'fade-in 0.5s ease-in forwards'
-                }}>
-                  {currentSilhouette.movie} ({currentSilhouette.year})
-                </p>
-              )}
+                  opacity: showMovieInfo ? 0.8 : 0,
+                  transition: 'opacity 0.3s ease-in-out',
+                  visibility: showMovieInfo ? 'visible' : 'hidden'
+                }}
+              >
+                {currentSilhouette.movie} ({currentSilhouette.year})
+              </p>
             </div>
           </div>
         )}
