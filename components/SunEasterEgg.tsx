@@ -207,8 +207,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         }
         
         @keyframes slow-counterclockwise-spin {
-          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 300px)) translateY(-50%) scale(0.28) rotate(-180deg); }
+          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); opacity: 1; }
+          100% { transform: translateX(calc(100vw + 400px)) translateY(-50%) scale(0.28) rotate(-180deg); opacity: 1; }
         }
         
         @keyframes slight-vibration {
@@ -240,19 +240,16 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         .animate-slight-bobbing { animation: slight-bobbing 7s linear forwards; }
         .animate-slow-clockwise-spin { animation: slow-clockwise-spin 7s linear forwards; }
         .animate-slow-counterclockwise-spin { 
-          animation: slow-counterclockwise-spin 7s linear forwards; 
-          animation-delay: 2s;
+          animation: slow-counterclockwise-spin 7s linear 2s forwards;
           opacity: 0;
-          animation-fill-mode: both;
         }
         
-        .animate-slow-counterclockwise-spin:nth-child(1) {
+        .animate-slow-counterclockwise-spin {
           animation-name: slow-counterclockwise-spin;
           animation-duration: 7s;
           animation-timing-function: linear;
           animation-delay: 2s;
           animation-fill-mode: both;
-          opacity: 1;
         }
         .animate-slight-vibration { animation: slight-vibration 7s linear forwards; }
         
