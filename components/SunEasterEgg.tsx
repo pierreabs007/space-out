@@ -34,6 +34,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     try {
       const response = await fetch('/movieReferences.json')
       const data = await response.json()
+      console.log('🎬 Loaded silhouettes:', data.silhouettes.length, 'items')
+      console.log('🎬 Silhouette IDs:', data.silhouettes.map((s: Silhouette) => s.id))
       return data.silhouettes
     } catch (error) {
       console.error('Failed to load movie references:', error)
@@ -44,21 +46,28 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
   // Get next silhouette to show (cycle through all before repeating)
   const getNextSilhouette = (silhouettes: Silhouette[]): Silhouette => {
     const shownSilhouettes = JSON.parse(localStorage.getItem('shownSilhouettes') || '[]')
+    console.log('🎬 Previously shown:', shownSilhouettes)
+    
     const unshownSilhouettes = silhouettes.filter(s => !shownSilhouettes.includes(s.id))
+    console.log('🎬 Available unshown:', unshownSilhouettes.map(s => s.id))
     
     let selectedSilhouette: Silhouette
     if (unshownSilhouettes.length > 0) {
       // Pick randomly from unshown
       selectedSilhouette = unshownSilhouettes[Math.floor(Math.random() * unshownSilhouettes.length)]
+      console.log('🎬 Selected from unshown:', selectedSilhouette.id)
     } else {
       // All have been shown, reset and pick randomly
+      console.log('🎬 All shown, resetting localStorage')
       localStorage.setItem('shownSilhouettes', '[]')
       selectedSilhouette = silhouettes[Math.floor(Math.random() * silhouettes.length)]
+      console.log('🎬 Selected after reset:', selectedSilhouette.id)
     }
     
     // Mark as shown
     const updatedShown = [...shownSilhouettes, selectedSilhouette.id]
     localStorage.setItem('shownSilhouettes', JSON.stringify(updatedShown))
+    console.log('🎬 Updated shown list:', updatedShown)
     
     return selectedSilhouette
   }
@@ -95,8 +104,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
 
   // Get CSS animation class based on motion type from JSON
   const getMotionClass = (motion: string): string => {
+    console.log('🎬 Motion type from JSON:', motion)
     switch (motion) {
-      case 'slight up and down bobbing':
+      case 'floating up and down':
         return 'animate-slight-bobbing'
       case 'slow clockwise spin':
         return 'animate-slow-clockwise-spin' 
@@ -105,6 +115,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       case 'slight vibration':
         return 'animate-slight-vibration'
       default:
+        console.log('🚨 Unknown motion type, using default bobbing')
         return 'animate-slight-bobbing' // Default fallback
     }
   }
