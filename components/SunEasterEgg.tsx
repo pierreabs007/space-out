@@ -156,6 +156,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
               
               // Clear local state immediately
               setIsAnimating(false)
+              setShowSvg(false)
               setShowQuote(false) 
               setDisplayedQuote('')
               setCurrentSilhouette(null)
