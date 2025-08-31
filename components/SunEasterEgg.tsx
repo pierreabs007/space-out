@@ -144,34 +144,24 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           setStartAnimation(true)
         }, 2000)
         
-        // SVG animation completes after 9 seconds total (2s delay + 7s animation)
-        completeTimeoutRef.current = setTimeout(() => {
-          console.log('🎬 SVG exited screen - hiding text')
+        // Animation completes after 9 seconds (2s delay + 7s animation)
+        setTimeout(() => {
+          console.log('🚨 TIMEOUT FIRED - Animation should be complete!')
+          console.log('🚨 About to call onComplete() to exit Easter egg')
           
-          // Step 1: Hide quotes immediately when SVG exits  
+          // Clear all local state immediately
+          setIsAnimating(false)
+          setStartAnimation(false)
+          setShowSvg(false)
           setShowQuote(false)
+          setShowMovieInfo(false)
+          setDisplayedQuote('')
+          setCurrentSilhouette(null)
+          setSvgContent('')
           
-          // Step 2: Wait 2 seconds then FORCE return to solar system
-          setTimeout(() => {
-            console.log('🎬 FORCING return to solar system - clearing state FIRST')
-            
-            // Clear local state immediately
-            setIsAnimating(false)
-            setStartAnimation(false)
-            setShowSvg(false)
-            setShowQuote(false)
-            setShowMovieInfo(false)
-            setDisplayedQuote('')
-            setCurrentSilhouette(null)
-            setSvgContent('')
-            
-            // THEN call parent completion (this should hide the overlay)
-            setTimeout(() => {
-              console.log('🚨 About to call onComplete() - this should end Easter egg!')
-              onComplete()
-              console.log('🚨 onComplete() called - Easter egg should be hidden now')
-            }, 100)
-          }, 2000)
+          // Call parent completion to hide overlay
+          onComplete()
+          console.log('🚨 onComplete() called - Easter egg should end NOW')
         }, 9000) // 2s delay + 7s animation = 9s total
       }
       
@@ -251,6 +241,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         .animate-slow-clockwise-spin { animation: slow-clockwise-spin 7s linear forwards; }
         .animate-slow-counterclockwise-spin { 
           animation: slow-counterclockwise-spin 7s linear forwards;
+          animation-delay: 2s;
+          animation-fill-mode: both;
         }
         .animate-slight-vibration { animation: slight-vibration 7s linear forwards; }
         
