@@ -145,11 +145,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         setTimeout(() => {
           console.log('🎬 Starting animation after delay...')
           
-          // Start quote typewriter effect after 0.5 second delay
-          setTimeout(() => {
-            setShowQuote(true)
-            typewriterEffect(selectedSilhouette.quote)
-          }, 500)
+          // Start quote typewriter effect immediately with animation
+          setShowQuote(true)
+          typewriterEffect(selectedSilhouette.quote)
           
           // SVG animation completes after 7 seconds
           completeTimeoutRef.current = setTimeout(() => {
@@ -193,25 +191,25 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       {/* Custom CSS animations */}
       <style jsx>{`
         @keyframes slight-bobbing {
-          0% { transform: translateX(0px) translateY(-50%) scale(0.2); }
+          0% { transform: translateX(-30px) translateY(-50%) scale(0.2); }
           25% { transform: translateX(25vw) translateY(calc(-50% - 5px)) scale(0.2); }
           50% { transform: translateX(50vw) translateY(-50%) scale(0.2); }
           75% { transform: translateX(75vw) translateY(calc(-50% - 3px)) scale(0.2); }
-          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.2); }
+          100% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.2); }
         }
         
         @keyframes slow-clockwise-spin {
-          0% { transform: translateX(0px) translateY(-50%) scale(0.2) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.2) rotate(180deg); }
+          0% { transform: translateX(-30px) translateY(-50%) scale(0.2) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.2) rotate(180deg); }
         }
         
         @keyframes slow-counterclockwise-spin {
-          0% { transform: translateX(0px) translateY(-50%) scale(0.2) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.2) rotate(-180deg); }
+          0% { transform: translateX(-30px) translateY(-50%) scale(0.2) rotate(0deg); }
+          100% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.2) rotate(-180deg); }
         }
         
         @keyframes slight-vibration {
-          0% { transform: translateX(0px) translateY(-50%) scale(0.2); }
+          0% { transform: translateX(-30px) translateY(-50%) scale(0.2); }
           10% { transform: translateX(10vw) translateY(calc(-50% - 1px)) scale(0.2); }
           20% { transform: translateX(20vw) translateY(calc(-50% + 1px)) scale(0.2); }
           30% { transform: translateX(30vw) translateY(calc(-50% - 1px)) scale(0.2); }
@@ -221,7 +219,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           70% { transform: translateX(70vw) translateY(calc(-50% - 1px)) scale(0.2); }
           80% { transform: translateX(80vw) translateY(calc(-50% + 1px)) scale(0.2); }
           90% { transform: translateX(90vw) translateY(calc(-50% - 1px)) scale(0.2); }
-          100% { transform: translateX(calc(100vw + 40px)) translateY(-50%) scale(0.2); }
+          100% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.2); }
         }
         
         @keyframes easteregg-fadeout {
