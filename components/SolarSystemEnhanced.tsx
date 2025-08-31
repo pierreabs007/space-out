@@ -1375,13 +1375,21 @@ function CameraSystem({
   speed, 
   verticalMin, 
   verticalMax,
-  onEasterEggTrigger
+  onEasterEggTrigger,
+  easterEggDelayTimer,
+  setEasterEggDelayTimer,
+  easterEggActive,
+  easterEggCooldown
 }: { 
   automaticMode: boolean, 
   speed: number,
   verticalMin: number,
   verticalMax: number,
-  onEasterEggTrigger: () => void
+  onEasterEggTrigger: () => void,
+  easterEggDelayTimer: NodeJS.Timeout | null,
+  setEasterEggDelayTimer: (timer: NodeJS.Timeout | null) => void,
+  easterEggActive: boolean,
+  easterEggCooldown: boolean
 }) {
   const { camera } = useThree()
   const orbitControlsRef = useRef<any>(null)
@@ -2226,6 +2234,10 @@ function SolarSystemEnhanced() {
           verticalMin={cameraVerticalMin}
           verticalMax={cameraVerticalMax}
           onEasterEggTrigger={handleEasterEggTrigger}
+          easterEggDelayTimer={easterEggDelayTimer}
+          setEasterEggDelayTimer={setEasterEggDelayTimer}
+          easterEggActive={easterEggActive}
+          easterEggCooldown={easterEggCooldown}
         />
         
         {/* Enhanced Lighting */}
