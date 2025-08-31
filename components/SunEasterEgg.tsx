@@ -215,8 +215,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         }
         
         @keyframes slow-counterclockwise-spin {
-          0% { transform: translateX(-30px) translateY(-50%) scale(0.28) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%) scale(0.28) rotate(-180deg); }
+          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
+          95% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.28) rotate(-170deg); }
+          100% { left: calc(100vw + 1000px); transform: translateY(-50%) scale(0.28) rotate(-180deg); visibility: hidden; display: none; }
         }
         
         @keyframes slight-vibration {
