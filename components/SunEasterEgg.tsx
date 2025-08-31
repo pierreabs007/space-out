@@ -133,13 +133,13 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // WAIT 1.5 seconds before starting animation (SVG hidden during delay)
+        // Start text immediately (SVG will be delayed by CSS)
+        setShowQuote(true)
+        fadeInText(selectedSilhouette.quote)
+        
+        // Animation timing (SVG starts after 1.5s CSS delay)
         setTimeout(() => {
-          console.log('🎬 Starting animation after 1.5s delay...')
-          
-          // Start quote fade-in effect immediately with animation
-          setShowQuote(true)
-          fadeInText(selectedSilhouette.quote)
+          console.log('🎬 SVG animation should have started (with 1.5s CSS delay)...')
           
           // SVG animation completes after 7 seconds
           completeTimeoutRef.current = setTimeout(() => {
@@ -168,9 +168,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
                 console.log('🚨 onComplete() called - Easter egg should be hidden now')
               }, 100)
             }, 2000)
-          }, 7000)
+          }, 8500) // 7s animation + 1.5s delay
           
-        }, 1500) // 1.5 second delay before animation starts
+        }, 0) // Start immediately, SVG has CSS delay
       }
       
       startAnimation()
@@ -225,7 +225,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           70% { transform: translateX(calc(70vw - 50px)) translateY(-50%) scale(0.28) rotate(-126deg); }
           80% { transform: translateX(calc(80vw - 50px)) translateY(-50%) scale(0.28) rotate(-144deg); }
           90% { transform: translateX(calc(90vw - 50px)) translateY(-50%) scale(0.28) rotate(-162deg); }
-          100% { transform: translateX(calc(100vw + 200px)) translateY(-50%) scale(0.28) rotate(-180deg); opacity: 0; }
+          100% { transform: translateX(calc(100vw + 400px)) translateY(-50%) scale(0.28) rotate(-180deg); }
         }
         
         @keyframes slight-vibration {
