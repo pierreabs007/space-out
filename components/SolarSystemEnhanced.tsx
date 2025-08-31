@@ -2277,6 +2277,7 @@ function SolarSystemEnhanced() {
       </Canvas>
       
       {/* Sun Easter Egg Overlay */}
+      {console.log('🚨 RENDERING CHECK - easterEggActive:', easterEggActive)}
       <SunEasterEgg
         isActive={easterEggActive}
         onComplete={handleEasterEggComplete}
