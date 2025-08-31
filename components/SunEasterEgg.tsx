@@ -215,9 +215,10 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         }
         
         @keyframes slow-counterclockwise-spin {
-          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
-          95% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.28) rotate(-170deg); }
-          100% { left: calc(100vw + 1000px); transform: translateY(-50%) scale(0.28) rotate(-180deg); visibility: hidden; display: none; }
+          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); opacity: 1; }
+          90% { transform: translateX(calc(90vw)) translateY(-50%) scale(0.28) rotate(-160deg); opacity: 1; }
+          95% { transform: translateX(calc(100vw + 50px)) translateY(-50%) scale(0.28) rotate(-170deg); opacity: 1; }
+          100% { transform: translateX(calc(100vw + 800px)) translateY(-50%) scale(0.28) rotate(-180deg); opacity: 0; }
         }
         
         @keyframes slight-vibration {
@@ -231,8 +232,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           70% { transform: translateX(70vw) translateY(calc(-50% - 1px)) scale(0.28); }
           80% { transform: translateX(80vw) translateY(calc(-50% + 1px)) scale(0.28); }
           90% { transform: translateX(90vw) translateY(calc(-50% - 1px)) scale(0.28); }
-          95% { transform: translateX(calc(100vw + 100px)) translateY(-50%) scale(0.28); }
-          100% { left: calc(100vw + 1000px); transform: translateY(-50%) scale(0.28); visibility: hidden; display: none; }
+          90% { transform: translateX(calc(90vw)) translateY(-50%) scale(0.28); opacity: 1; }
+          95% { transform: translateX(calc(100vw + 50px)) translateY(-50%) scale(0.28); opacity: 1; }
+          100% { transform: translateX(calc(100vw + 800px)) translateY(-50%) scale(0.28); opacity: 0; }
         }
         
         @keyframes easteregg-fadeout {
