@@ -1503,13 +1503,25 @@ function CameraSystem({
     const cameraPosition = camera.position
     const distanceToSun = cameraPosition.distanceTo(sunPosition)
     
-    // Trigger Easter egg when camera is within ~6 units of sun center
-    // (Sun radius is 4, so this means camera is ~2 units from surface)  
-    // At this distance, the sun would fill most/all of the screen
+    // Easter egg distance detection with 2-second hold delay
     console.log('🔍 Distance to sun:', distanceToSun.toFixed(2))
     if (distanceToSun <= 6) {
-      console.log('🚨 EASTER EGG SHOULD TRIGGER NOW!')
-      onEasterEggTrigger()
+      if (!easterEggDelayTimer && !easterEggActive && !easterEggCooldown) {
+        console.log('🌟 Close to sun detected - starting 2s delay timer...')
+        const timer = setTimeout(() => {
+          console.log('🚨 2-second delay complete - triggering Easter egg!')
+          onEasterEggTrigger()
+          setEasterEggDelayTimer(null)
+        }, 2000)
+        setEasterEggDelayTimer(timer)
+      }
+    } else {
+      // If we move away from sun before delay completes, cancel timer
+      if (easterEggDelayTimer) {
+        console.log('🔍 Moved away from sun - canceling delay timer')
+        clearTimeout(easterEggDelayTimer)
+        setEasterEggDelayTimer(null)
+      }
     }
   })
   
@@ -1549,6 +1561,7 @@ function SolarSystemEnhanced() {
   // Easter egg state
   const [easterEggActive, setEasterEggActive] = useState(false)
   const [easterEggCooldown, setEasterEggCooldown] = useState(false)
+  const [easterEggDelayTimer, setEasterEggDelayTimer] = useState<NodeJS.Timeout | null>(null)
   
   // Easter egg handlers
   const handleEasterEggTrigger = () => {
@@ -1570,11 +1583,17 @@ function SolarSystemEnhanced() {
   
   const handleEasterEggComplete = () => {
     console.log('🚨 handleEasterEggComplete CALLED!')
-    console.log('🚨 Current easterEggActive state:', easterEggActive)
     setEasterEggActive(false)
-    setEasterEggCooldown(false)
-    console.log('🚨 Set easterEggActive to FALSE - overlay should hide now')
-    console.log('🚨 handleEasterEggComplete FINISHED')
+    setEasterEggCooldown(true)
+    
+    // Move camera back from sun to prevent immediate retriggering
+    // This will be handled by camera system - set a flag
+    console.log('🚨 Easter egg ended - should move camera away from sun')
+    
+    // Reset cooldown after longer delay
+    setTimeout(() => {
+      setEasterEggCooldown(false)
+    }, 10000) // 10 second cooldown
   }
 
   // Keyboard controls for camera movement and mode switching
