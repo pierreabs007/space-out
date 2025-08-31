@@ -102,22 +102,10 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     setDisplayedQuote(text) // Set text immediately
   }
 
-  // Get CSS animation class based on motion type from JSON
+  // All animations now use slow counterclockwise rotation
   const getMotionClass = (motion: string): string => {
-    console.log('🎬 Motion type from JSON:', motion)
-    switch (motion) {
-      case 'floating up and down':
-        return 'animate-slight-bobbing'
-      case 'slow clockwise spin':
-        return 'animate-slow-clockwise-spin' 
-      case 'slow counterclockwise spin':
-        return 'animate-slow-counterclockwise-spin'
-      case 'slight vibration':
-        return 'animate-slight-vibration'
-      default:
-        console.log('🚨 Unknown motion type, using default bobbing')
-        return 'animate-slight-bobbing' // Default fallback
-    }
+    console.log('🎬 Using slow counterclockwise rotation for all SVGs')
+    return 'animate-slow-counterclockwise-spin'
   }
 
   // Start the Easter egg animation
@@ -173,8 +161,11 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
               
               // THEN call parent completion (this should hide the overlay)
               setTimeout(() => {
-                console.log('🎬 Calling onComplete() to hide Easter egg overlay')
+                console.log('🚨 About to call onComplete() - this should end Easter egg!')
+                console.log('🚨 Current isAnimating:', isAnimating)
+                console.log('🚨 Current currentSilhouette:', currentSilhouette?.name)
                 onComplete()
+                console.log('🚨 onComplete() called - Easter egg should be hidden now')
               }, 100)
             }, 2000)
           }, 7000)
@@ -191,11 +182,14 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     }
   }, [isActive, isAnimating, onComplete])
 
-  console.log('🎬 SunEasterEgg render - isActive:', isActive, 'currentSilhouette:', currentSilhouette?.name)
+  console.log('🔍 EASTER EGG RENDER CHECK - isActive:', isActive, 'currentSilhouette:', currentSilhouette?.name)
   
   if (!isActive || !currentSilhouette) {
+    console.log('🔍 Easter egg NOT rendering - returning null')
     return null
   }
+  
+  console.log('🔍 Easter egg IS rendering - showing overlay')
 
   return (
     <>

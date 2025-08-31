@@ -6,8 +6,7 @@
       "svgPath": "/movie_shapes/uss_enterprise.svg",
       "quote": "Beam me up, Scotty!",
       "movie": "Star Trek",
-      "year": 1979,
-      "motion": "floating up and down"
+      "year": 1979
     },
     {
       "id": "millennium_falcon",
@@ -15,8 +14,7 @@
       "svgPath": "/movie_shapes/millennium_falcon.svg",
       "quote": "Never tell me the odds!",
       "movie": "Star Wars",
-      "year": 1977,
-      "motion": "floating up and down"
+      "year": 1977
     },
     {
       "id": "xenomorph",
@@ -24,8 +22,7 @@
       "svgPath": "/movie_shapes/xenomorph_creature.svg",
       "quote": "In space, no one can hear you scream",
       "movie": "Alien",
-      "year": 1979,
-      "motion": "slow clockwise spin"
+      "year": 1979
     },
     {
       "id": "apollo_13",
@@ -33,8 +30,7 @@
       "svgPath": "/movie_shapes/apollo_13.svg",
       "quote": "Houston, we have a problem",
       "movie": "Apollo 13",
-      "year": 1995,
-      "motion": "slow clockwise spin"
+      "year": 1995
     },
     {
       "id": "discovery_one",
@@ -42,8 +38,7 @@
       "svgPath": "/movie_shapes/discovery_one.svg",
       "quote": "I'm sorry Dave, I'm afraid I can't do that",
       "movie": "2001: A Space Odyssey",
-      "year": 1968,
-      "motion": "floating up and down"
+      "year": 1968
     },
     {
       "id": "delorean",
@@ -51,8 +46,7 @@
       "svgPath": "/movie_shapes/delorean.svg",
       "quote": "Where we're going, we don't need roads",
       "movie": "Back to the Future",
-      "year": 1985,
-      "motion": "slight vibration"
+      "year": 1985
     },
     {
       "id": "soyuz",
@@ -60,8 +54,7 @@
       "svgPath": "/movie_shapes/gravity-soyuz.svg",
       "quote": "I hate space",
       "movie": "Gravity",
-      "year": 2013,
-      "motion": "slow counterclockwise spin"
+      "year": 2013
     },
     {
       "id": "eagle_5",
@@ -69,8 +62,7 @@
       "svgPath": "/movie_shapes/eagle_5.svg",
       "quote": "May the Schwartz be with you",
       "movie": "Spaceballs",
-      "year": 1987,
-      "motion": "floating up and down"
+      "year": 1987
     },
     {
       "id": "planet_express",
@@ -78,8 +70,7 @@
       "svgPath": "/movie_shapes/planet_express.svg",
       "quote": "Good news, everyone!",
       "movie": "Futurama",
-      "year": 1999,
-      "motion": "floating up and down"
+      "year": 1999
     },
     {
       "id": "little_prince",
@@ -87,8 +78,7 @@
       "svgPath": "/movie_shapes/le_petit_prince.svg",
       "quote": "What is essential is invisible to the eye",
       "movie": "The Little Prince",
-      "year": 2015,
-      "motion": "slow counterclockwise spin"
+      "year": 2015
     }
   ]
 }
