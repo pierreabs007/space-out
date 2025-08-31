@@ -134,14 +134,14 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // WAIT 1.5 seconds before showing SVG and text
+        // WAIT 2 seconds before showing SVG (text can start earlier)
+        setShowQuote(true)
+        fadeInText(selectedSilhouette.quote)
+        
         setTimeout(() => {
-          console.log('🎬 1.5s delay complete - starting SVG and text...')
-          
-          // Now show SVG (triggers animation) and text
+          console.log('🎬 2 second delay complete - showing SVG...')
           setShowSvg(true)
-          setShowQuote(true)
-          fadeInText(selectedSilhouette.quote)
+        }, 2000)
           
           // SVG animation completes after 7 seconds
           completeTimeoutRef.current = setTimeout(() => {
@@ -173,7 +173,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
             }, 2000)
           }, 7000) // 7s animation duration
           
-        }, 1500) // 1.5s delay before SVG appears
+        }, 0) // Text starts immediately, SVG delayed by 2s above
       }
       
       startAnimation()
@@ -228,7 +228,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           70% { transform: translateX(calc(70vw - 50px)) translateY(-50%) scale(0.28) rotate(-126deg); }
           80% { transform: translateX(calc(80vw - 50px)) translateY(-50%) scale(0.28) rotate(-144deg); }
           90% { transform: translateX(calc(90vw - 50px)) translateY(-50%) scale(0.28) rotate(-162deg); }
-          100% { transform: translateX(calc(100vw + 400px)) translateY(-50%) scale(0.28) rotate(-180deg); }
+          95% { transform: translateX(calc(95vw - 50px)) translateY(-50%) scale(0.28) rotate(-171deg); }
+          100% { transform: translateX(calc(100vw + 50px)) translateY(-50%) scale(0.28) rotate(-180deg); }
         }
         
         @keyframes slight-vibration {
