@@ -1659,7 +1659,7 @@ function CameraSystem({
 }
 
 function SolarSystemEnhanced() {
-  const [timeScale, setTimeScale] = useState(250)
+  const [timeScale, setTimeScale] = useState(100)
   const [showSun, setShowSun] = useState(true)
   const [showOrbits, setShowOrbits] = useState(true)
   const [showMoons, setShowMoons] = useState(true)
@@ -1942,7 +1942,7 @@ function SolarSystemEnhanced() {
             <button 
               onClick={() => {
                 // Reset all values to defaults
-                setTimeScale(250)
+                setTimeScale(100)
                 setCameraSpeed(0.03)
                 setCameraAnimation(true)
                 setCameraVerticalMin(-5)
@@ -2554,7 +2554,7 @@ function SolarSystemEnhanced() {
               PAUSE
             </button>
             <button
-              onClick={() => setTimeScale(timeScale === 0 ? 250 : timeScale)}
+              onClick={() => setTimeScale(timeScale === 0 ? 100 : timeScale)}
               className={`px-3 py-2 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                 timeScale > 0 
                   ? 'bg-blue-500/20 border-blue-400/50 text-blue-300' 
