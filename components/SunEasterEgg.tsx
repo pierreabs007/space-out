@@ -122,9 +122,17 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     const endX = viewportWidth + svgWidth // 1x SVG width past right edge
     const speed = 4 // pixels per frame (adjust for desired speed)
     
+    // Random rotation direction and sine curve parameters
+    const rotationDirection = Math.random() < 0.5 ? 1 : -1 // Randomly clockwise or counterclockwise
+    const centerY = window.innerHeight * 0.5 // Center of screen
+    const amplitude = 240 // Height of sine wave (pixels) - 4x for very dramatic floating
+    const waveCount = 1.2 // Number of complete waves across screen
+    const randomPhaseOffset = Math.random() * Math.PI * 2 // Random starting point on sine wave (0 to 2π)
+    
     let currentPosition = startX
     
     console.log(`🎬 Animation setup: viewport=${viewportWidth}px, svgWidth=${svgWidth}px, startX=${startX}px, endX=${endX}px`)
+    console.log(`🎬 Rotation direction: ${rotationDirection === 1 ? 'Clockwise' : 'Counterclockwise'}, Sine wave: amplitude=${amplitude}px, waves=${waveCount}, phase=${randomPhaseOffset.toFixed(2)}`)
     
     // Set debug info for display
     setDebugInfo({
@@ -136,21 +144,26 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       rightEdge: viewportWidth
     })
     
-    // IMMEDIATELY position SVG off-screen before starting animation
-    element.style.transform = `translateX(${startX}px) translateY(-50%) scale(0.28) rotate(0deg)`
+    // IMMEDIATELY position SVG off-screen before starting animation with random sine position
+    const initialSineOffset = Math.sin(randomPhaseOffset) * amplitude
+    element.style.transform = `translateX(${startX}px) translateY(calc(-50% + ${initialSineOffset}px)) scale(0.28) rotate(0deg)`
     setRealTimePosition(startX) // Set initial position for debug
     
     // Animation loop
     const animate = () => {
       // Update position FIRST, then apply transform
       currentPosition += speed
-      const rotation = ((currentPosition - startX) / (endX - startX)) * -180 // Rotate as it moves
+      const progress = (currentPosition - startX) / (endX - startX) // 0 to 1 across screen
+      const rotation = progress * 180 * rotationDirection // Random direction rotation
+      
+      // Calculate sine curve floating effect with random starting point
+      const sineOffset = Math.sin((progress * Math.PI * waveCount) + randomPhaseOffset) * amplitude
       
       // Update real-time position for debug display
       setRealTimePosition(currentPosition)
       
-      // Apply position to element
-      element.style.transform = `translateX(${currentPosition}px) translateY(-50%) scale(0.28) rotate(${rotation}deg)`
+      // Apply position to element with sine curve floating
+      element.style.transform = `translateX(${currentPosition}px) translateY(calc(-50% + ${sineOffset}px)) scale(0.28) rotate(${rotation}deg)`
       
       // Check if SVG has exited viewport (start fade-out)
       if (currentPosition >= viewportWidth && !element.dataset.fadeStarted) {

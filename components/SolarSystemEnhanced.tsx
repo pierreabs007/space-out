@@ -3,7 +3,7 @@
 import React, { useRef, useState, useMemo, useEffect, createContext, useContext } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { Mesh, Group, InstancedMesh, Object3D, Vector2, Raycaster, Vector3, CanvasTexture, RepeatWrapping, ClampToEdgeWrapping, BackSide, TextureLoader } from 'three'
+import { Mesh, Group, InstancedMesh, Object3D, Vector2, Raycaster, Vector3, CanvasTexture, RepeatWrapping, ClampToEdgeWrapping, BackSide, TextureLoader, DoubleSide } from 'three'
 import { RotateCcw, EyeOff, Eye, Maximize, Info, ArrowLeft } from 'lucide-react'
 import SunEasterEgg from './SunEasterEgg'
 import MilkyWayEasterEgg from './MilkyWayEasterEgg'
@@ -654,7 +654,7 @@ function SaturnRings({ planet, timeScale }: {
       <group ref={ringsGroupRef}>
         <mesh rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[2.8, 4.2, 32]} />
-          <meshBasicMaterial color="#D4AF37" />
+          <meshBasicMaterial color="#D4AF37" side={DoubleSide} />
         </mesh>
       </group>
     </group>
@@ -1269,7 +1269,7 @@ const planetData = [
     name: 'Venus', 
     distance: 22, 
     radius: 1.2, 
-    color: '#BBAA8E', 
+    color: '#A0855C', 
     speed: 0.00162, // 1.62x Earth's speed (225 day orbit vs 365 days - Venus orbits faster)
     startAngle: 1.2,
     inclination: 0.2, // Minimal inclination to stay in orbital plane
@@ -1333,8 +1333,13 @@ const planetData = [
     eccentricity: 0.03,
     axialTilt: 26.7 * Math.PI / 180,
     moons: [
-      { distance: 5, radius: 0.25, color: '#FFCC99', speed: 0.004, startAngle: 2.1 },
-      { distance: 6.5, radius: 0.15, color: '#CCCCCC', speed: 0.003, startAngle: 5.5 }
+      { distance: 5, radius: 0.25, color: '#FFCC99', speed: 0.004, startAngle: 2.1 },      // Titan
+      { distance: 6.5, radius: 0.15, color: '#CCCCCC', speed: 0.00287, startAngle: 5.5 }, // Rhea
+      { distance: 3.8, radius: 0.08, color: '#E8E8E8', speed: 0.01147, startAngle: 0.8 }, // Enceladus
+      { distance: 8.2, radius: 0.12, color: '#8B7355', speed: 0.00184, startAngle: 3.7 }, // Iapetus  
+      { distance: 4.5, radius: 0.09, color: '#D0D0D0', speed: 0.00751, startAngle: 1.5 }, // Dione
+      { distance: 4.2, radius: 0.08, color: '#C8C8C8', speed: 0.00832, startAngle: 4.2 }, // Tethys
+      { distance: 3.2, radius: 0.06, color: '#B8B8B8', speed: 0.01739, startAngle: 0.3 }  // Mimas
     ]
   },
   { 
@@ -3006,7 +3011,7 @@ function SolarSystemEnhanced() {
           ))}
           
           {/* Saturn's Rings */}
-          {saturnData && (
+          {showPlanets && saturnData && (
             <SaturnRings 
               planet={saturnData}
               timeScale={timeScale}
