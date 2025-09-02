@@ -1026,22 +1026,35 @@ const createJupiterTexture = () => {
   const ctx = canvas.getContext('2d')
   if (!ctx) return null
 
-  // Draw horizontal bands
-  const bandHeight = canvas.height / 12
-  for (let i = 0; i < 12; i++) {
-    const y = i * bandHeight
-    
-    // Alternate between light and dark bands
-    if (i % 2 === 0) {
-      // Light zones (cream/beige)
-      ctx.fillStyle = i % 4 === 0 ? '#F0E6D2' : '#E8DCC0'
-    } else {
-      // Dark belts (lighter browns for less contrast)
-      ctx.fillStyle = i % 3 === 1 ? '#D4B896' : '#C4A484'
-    }
-    
-    ctx.fillRect(0, y, canvas.width, bandHeight)
-  }
+  // Draw specific Jupiter bands with custom colors and thickness
+  const bands = [
+    { color: '#BFAB87', thickness: 4 },
+    { color: '#BB9D7B', thickness: 1 },
+    { color: '#D1C4B8', thickness: 2 },
+    { color: '#D7DBE6', thickness: 2 },
+    { color: '#C6936C', thickness: 3 },
+    { color: '#F4EBE2', thickness: 1 },
+    { color: '#D3BDAA', thickness: 2 },
+    { color: '#D5C9B8', thickness: 2 },
+    { color: '#E4EDEF', thickness: 1 },
+    { color: '#C3B9A9', thickness: 1 },
+    { color: '#DCD1C4', thickness: 1 },
+    { color: '#B8AF9F', thickness: 2 },
+    { color: '#B1AFA6', thickness: 1 },
+    { color: '#9B886C', thickness: 3 }
+  ]
+  
+  // Calculate total thickness units
+  const totalThickness = bands.reduce((sum, band) => sum + band.thickness, 0)
+  const unitHeight = canvas.height / totalThickness
+  
+  let currentY = 0
+  bands.forEach(band => {
+    const bandHeight = unitHeight * band.thickness
+    ctx.fillStyle = band.color
+    ctx.fillRect(0, currentY, canvas.width, bandHeight)
+    currentY += bandHeight
+  })
 
   // Add Great Red Spot
   const grsX = canvas.width * 0.3
@@ -1245,7 +1258,7 @@ const planetData = [
     name: 'Mercury', 
     distance: 15, 
     radius: 0.8, 
-    color: '#8C7853', 
+    color: '#808080', 
     speed: 0.00415, // 4.15x faster than Earth (88 day orbit vs 365 days)
     startAngle: 0,
     inclination: 0.2, // Minimal inclination to stay in orbital plane
@@ -1256,7 +1269,7 @@ const planetData = [
     name: 'Venus', 
     distance: 22, 
     radius: 1.2, 
-    color: '#FFC649', 
+    color: '#BBAA8E', 
     speed: 0.00162, // 1.62x Earth's speed (225 day orbit vs 365 days - Venus orbits faster)
     startAngle: 1.2,
     inclination: 0.2, // Minimal inclination to stay in orbital plane
@@ -1647,10 +1660,11 @@ function SolarSystemEnhanced() {
   const [showMoons, setShowMoons] = useState(true)
   const [showAsteroidBelt, setShowAsteroidBelt] = useState(true)
   const [showStars, setShowStars] = useState(true)
+  const [showPlanets, setShowPlanets] = useState(true)
   const [milkyWayBrightness, setMilkyWayBrightness] = useState(0.1) // Default to 10% brightness
   const [showKuiperBelt, setShowKuiperBelt] = useState(true)
   const [cameraAnimation, setCameraAnimation] = useState(true)
-  const [cameraSpeed, setCameraSpeed] = useState(0.02) // Default 2% speed
+  const [cameraSpeed, setCameraSpeed] = useState(0.03) // Default 15% speed
   const [cameraVerticalMin, setCameraVerticalMin] = useState(-5) // Default lower bound -5°
   const [cameraVerticalMax, setCameraVerticalMax] = useState(60) // Default upper bound 60°
   const [hoveredObject, setHoveredObject] = useState<any>(null)
@@ -1924,7 +1938,7 @@ function SolarSystemEnhanced() {
               onClick={() => {
                 // Reset all values to defaults
                 setTimeScale(250)
-                setCameraSpeed(0.02)
+                setCameraSpeed(0.03)
                 setCameraAnimation(true)
                 setCameraVerticalMin(-5)
                 setCameraVerticalMax(60)
@@ -1933,6 +1947,7 @@ function SolarSystemEnhanced() {
                 setShowMoons(true)
                 setShowAsteroidBelt(true)
                 setShowStars(true)
+                setShowPlanets(true)
                 setMilkyWayBrightness(0.1)
                 setShowKuiperBelt(true)
                 setControlsPinned(false)
@@ -2066,7 +2081,7 @@ function SolarSystemEnhanced() {
                   <div><span className="text-cyan-300 font-medium">ELEVATION CONTROL:</span> Vertical viewing angle boundaries</div>
                   <div><span className="text-cyan-300 font-medium">TIME ACCELERATION:</span> Orbital motion speed control</div>
                   <div><span className="text-cyan-300 font-medium">DISPLAY CONFIGURATION:</span> Toggle visibility of celestial objects</div>
-                  <div><span className="text-cyan-300 font-medium">BACKGROUND INTENSITY:</span> Milky Way galaxy brightness</div>
+                  <div><span className="text-cyan-300 font-medium">GALAXY LUMINOSITY:</span> Milky Way galaxy brightness</div>
                 </div>
               </div>
 
@@ -2550,8 +2565,15 @@ function SolarSystemEnhanced() {
         <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <div className="text-[10px] font-semibold text-gray-300 tracking-wider">DISPLAY CONFIGURATION</div>
-            <div className="px-1 py-0.5 bg-green-500/20 border border-green-400/40 rounded text-[7px] text-green-300 font-medium">
-              6 ACTIVE
+            <div className={`px-1 py-0.5 rounded text-[7px] font-medium ${
+              (() => {
+                const activeCount = [showSun, showOrbits, showMoons, showAsteroidBelt, showStars, showPlanets].filter(Boolean).length
+                return activeCount === 0 
+                  ? 'bg-orange-500/20 border border-orange-400/40 text-orange-300' 
+                  : 'bg-green-500/20 border border-green-400/40 text-green-300'
+              })()
+            }`}>
+              {[showSun, showOrbits, showMoons, showAsteroidBelt, showStars, showPlanets].filter(Boolean).length} ACTIVE
             </div>
           </div>
           
@@ -2580,7 +2602,7 @@ function SolarSystemEnhanced() {
                     width: '15px',
                     height: '15px',
                     top: '50%',
-                    left: showSun ? '28.5px' : '4.5px',
+                    left: showSun ? '26.5px' : '6.5px',
                     transform: 'translateY(-50%)',
                     boxShadow: showSun 
                       ? '0 0 10px rgba(0, 255, 255, 0.6)' 
@@ -2615,7 +2637,7 @@ function SolarSystemEnhanced() {
                     width: '15px',
                     height: '15px',
                     top: '50%',
-                    left: showOrbits ? '28.5px' : '4.5px',
+                    left: showOrbits ? '26.5px' : '6.5px',
                     transform: 'translateY(-50%)',
                     boxShadow: showOrbits 
                       ? '0 0 10px rgba(0, 255, 255, 0.6)' 
@@ -2624,6 +2646,41 @@ function SolarSystemEnhanced() {
                 ></div>
               </div>
               <div className="text-[10px] text-white/80 mt-1 font-light">ORBITS</div>
+            </div>
+            
+            <div className="flex flex-col items-center">
+              <div 
+                onClick={() => setShowPlanets(!showPlanets)}
+                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
+                  showPlanets 
+                    ? 'bg-gray-800/40 border-cyan-400/60' 
+                    : 'bg-gray-900/60 border-gray-700/40'
+                }`}
+                style={{
+                  boxShadow: showPlanets 
+                    ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
+                    : 'none'
+                }}
+              >
+                <div 
+                  className={`absolute rounded-full transition-all duration-300 ${
+                    showPlanets 
+                      ? 'bg-cyan-400' 
+                      : 'bg-gray-500'
+                  }`}
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    top: '50%',
+                    left: showPlanets ? '26.5px' : '6.5px',
+                    transform: 'translateY(-50%)',
+                    boxShadow: showPlanets 
+                      ? '0 0 10px rgba(0, 255, 255, 0.6)' 
+                      : 'none'
+                  }}
+                ></div>
+              </div>
+              <div className="text-[10px] text-white/80 mt-1 font-light">PLANETS</div>
             </div>
             
             <div className="flex flex-col items-center">
@@ -2650,7 +2707,7 @@ function SolarSystemEnhanced() {
                     width: '15px',
                     height: '15px',
                     top: '50%',
-                    left: showMoons ? '28.5px' : '4.5px',
+                    left: showMoons ? '26.5px' : '6.5px',
                     transform: 'translateY(-50%)',
                     boxShadow: showMoons 
                       ? '0 0 10px rgba(0, 255, 255, 0.6)' 
@@ -2688,7 +2745,7 @@ function SolarSystemEnhanced() {
                     width: '15px',
                     height: '15px',
                     top: '50%',
-                    left: showAsteroidBelt ? '28.5px' : '4.5px',
+                    left: showAsteroidBelt ? '26.5px' : '6.5px',
                     transform: 'translateY(-50%)',
                     boxShadow: showAsteroidBelt 
                       ? '0 0 10px rgba(0, 255, 255, 0.6)' 
@@ -2723,7 +2780,7 @@ function SolarSystemEnhanced() {
                     width: '15px',
                     height: '15px',
                     top: '50%',
-                    left: showStars ? '28.5px' : '4.5px',
+                    left: showStars ? '26.5px' : '6.5px',
                     transform: 'translateY(-50%)',
                     boxShadow: showStars 
                       ? '0 0 10px rgba(0, 255, 255, 0.6)' 
@@ -2733,48 +2790,13 @@ function SolarSystemEnhanced() {
               </div>
               <div className="text-[10px] text-white/80 mt-1 font-light">STAR FIELD</div>
             </div>
-            
-            <div className="flex flex-col items-center">
-              <div 
-                onClick={() => setMilkyWayBrightness(milkyWayBrightness === 0 ? 0.1 : 0)}
-                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
-                  milkyWayBrightness > 0 
-                    ? 'bg-gray-800/40 border-cyan-400/60' 
-                    : 'bg-gray-900/60 border-gray-700/40'
-                }`}
-                style={{
-                  boxShadow: milkyWayBrightness > 0 
-                    ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
-                    : 'none'
-                }}
-              >
-                <div 
-                  className={`absolute rounded-full transition-all duration-300 ${
-                    milkyWayBrightness > 0 
-                      ? 'bg-cyan-400' 
-                      : 'bg-gray-500'
-                  }`}
-                  style={{
-                    width: '15px',
-                    height: '15px',
-                    top: '50%',
-                    left: milkyWayBrightness > 0 ? '28.5px' : '4.5px',
-                    transform: 'translateY(-50%)',
-                    boxShadow: milkyWayBrightness > 0 
-                      ? '0 0 10px rgba(0, 255, 255, 0.6)' 
-                      : 'none'
-                  }}
-                ></div>
-              </div>
-              <div className="text-[10px] text-white/80 mt-1 font-light">GALAXY</div>
-            </div>
           </div>
         </div>
 
         {/* NASA-Style Background Intensity Control */}
         <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-3">
-            <div className="text-[10px] font-semibold text-gray-300 tracking-wider">BACKGROUND INTENSITY</div>
+            <div className="text-[10px] font-semibold text-gray-300 tracking-wider">GALAXY LUMINOSITY</div>
             <div className="px-1 py-0.5 bg-green-500/20 border border-green-400/40 rounded text-[7px] text-green-300 font-medium">
               {(milkyWayBrightness * 100).toFixed(0)}%
             </div>
@@ -2964,7 +2986,7 @@ function SolarSystemEnhanced() {
           ))}
           
           {/* All planets with moons */}
-          {planetData.map((planet) => (
+          {showPlanets && planetData.map((planet) => (
             <Planet 
               key={planet.name}
               distance={planet.distance}
