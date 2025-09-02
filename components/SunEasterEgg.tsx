@@ -25,12 +25,14 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
   const [displayedQuote, setDisplayedQuote] = useState('')
   const [isAnimating, setIsAnimating] = useState(false)
   const [showSvg, setShowSvg] = useState(false)
-  const [startAnimation, setStartAnimation] = useState(false)
   const [showMovieInfo, setShowMovieInfo] = useState(false)
-  const [rotationDirection, setRotationDirection] = useState<'cw' | 'ccw'>('cw')
+
   const animationRef = useRef<HTMLDivElement>(null)
   const quoteTimeoutRef = useRef<NodeJS.Timeout>()
-  const completeTimeoutRef = useRef<NodeJS.Timeout>()
+  const animationFrameRef = useRef<number | null>(null)
+  const [currentX, setCurrentX] = useState<number>(0)
+  const [debugInfo, setDebugInfo] = useState<{viewport: number, startX: number, endX: number, svgWidth: number, leftEdge: number, rightEdge: number} | null>(null)
+  const [realTimePosition, setRealTimePosition] = useState<number | null>(null)
 
   // Load movie references data
   const loadMovieReferences = async (): Promise<Silhouette[]> => {
@@ -105,15 +107,106 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     setDisplayedQuote(text) // Set text immediately
   }
 
-  // All animations now use slow counterclockwise rotation
-  const getMotionClass = (motion: string): string => {
-    console.log('🎬 Using slow counterclockwise rotation for all SVGs')
-    return 'animate-slow-counterclockwise-spin'
+  // Distance-based animation function
+  const startDistanceBasedAnimation = () => {
+    const element = animationRef.current
+    if (!element) return
+    
+    // Measure viewport and SVG
+    const viewportWidth = window.innerWidth
+    const svgElement = element.querySelector('svg')
+    const svgWidth = svgElement ? svgElement.getBoundingClientRect().width : 50
+    
+    // Calculate start and end positions (3x SVG width off-screen, 1x SVG width past right edge)
+    const startX = -(svgWidth * 3) // 3x SVG width off-screen left
+    const endX = viewportWidth + svgWidth // 1x SVG width past right edge
+    const speed = 4 // pixels per frame (adjust for desired speed)
+    
+    let currentPosition = startX
+    
+    console.log(`🎬 Animation setup: viewport=${viewportWidth}px, svgWidth=${svgWidth}px, startX=${startX}px, endX=${endX}px`)
+    
+    // Set debug info for display
+    setDebugInfo({
+      viewport: viewportWidth,
+      startX: startX,
+      endX: endX,
+      svgWidth: svgWidth,
+      leftEdge: 0,
+      rightEdge: viewportWidth
+    })
+    
+    // IMMEDIATELY position SVG off-screen before starting animation
+    element.style.transform = `translateX(${startX}px) translateY(-50%) scale(0.28) rotate(0deg)`
+    setRealTimePosition(startX) // Set initial position for debug
+    
+    // Animation loop
+    const animate = () => {
+      // Update position FIRST, then apply transform
+      currentPosition += speed
+      const rotation = ((currentPosition - startX) / (endX - startX)) * -180 // Rotate as it moves
+      
+      // Update real-time position for debug display
+      setRealTimePosition(currentPosition)
+      
+      // Apply position to element
+      element.style.transform = `translateX(${currentPosition}px) translateY(-50%) scale(0.28) rotate(${rotation}deg)`
+      
+      // Check if SVG has exited viewport (start fade-out)
+      if (currentPosition >= viewportWidth && !element.dataset.fadeStarted) {
+        console.log('🚨 SVG exited viewport - starting text fade-out')
+        element.dataset.fadeStarted = 'true' // Prevent multiple fade-outs
+        
+        // Start fade-out sequence as soon as SVG exits viewport
+        const quoteElement = document.querySelector('.easter-egg-quote') as HTMLElement
+        if (quoteElement) {
+          quoteElement.style.transition = 'opacity 0.5s ease-out'
+          quoteElement.style.opacity = '0'
+        }
+      }
+      
+      // Check if animation is completely done (SVG fully off-screen)
+      if (currentPosition >= endX) {
+        console.log('🚨 Distance-based animation complete!')
+        animationFrameRef.current = null
+        
+        // Start overlay fade-out after text fade-out
+        setTimeout(() => {
+          console.log('🚨 Starting overlay fade-out')
+          const overlay = document.querySelector('.easter-egg-overlay') as HTMLElement
+          if (overlay) {
+            overlay.style.transition = 'opacity 0.8s ease-out'
+            overlay.style.opacity = '0'
+          }
+          
+          // Complete after overlay fade-out
+          setTimeout(() => {
+            console.log('🚨 Calling onComplete() to end Easter Egg')
+            onComplete()
+          }, 800) // Wait for overlay fade-out
+        }, 500) // Wait for text fade-out first
+      } else {
+        // Continue animation
+        animationFrameRef.current = requestAnimationFrame(animate)
+      }
+    }
+    
+    // Start the animation
+    animationFrameRef.current = requestAnimationFrame(animate)
   }
 
   // Start the Easter egg animation
   useEffect(() => {
     if (isActive && !isAnimating) {
+      // Reset all state for fresh start
+      setShowSvg(false)
+      setShowQuote(false)
+      setShowMovieInfo(false)
+      setCurrentSilhouette(null)
+      setSvgContent('')
+      setDisplayedQuote('')
+      setRealTimePosition(null)
+      
       setIsAnimating(true)
       
       const startAnimation = async () => {
@@ -121,9 +214,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const silhouettes = await loadMovieReferences()
         if (silhouettes.length === 0) return
         
-        // Clear localStorage for testing (remove after debugging)
-        localStorage.removeItem('shownSilhouettes')
-        console.log('🎬 Cleared localStorage for fresh selection')
+        // Keep localStorage tracking intact for proper cycling
         
         const selectedSilhouette = getNextSilhouette(silhouettes)
         setCurrentSilhouette(selectedSilhouette)
@@ -133,26 +224,21 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // Start text immediately, show SVG after 2s delay
-        setShowQuote(true)
-        fadeInText(selectedSilhouette.quote)
-        setShowSvg(true) // Show SVG element (but no animation class yet)
+        // Start animation immediately (no delay)
+        console.log('🎬 Starting SVG animation immediately...')
+        setShowSvg(true)
         
-        // Start animation after 2 seconds
-        setTimeout(() => {
-          console.log('🎬 2s delay complete - starting SVG animation...')
-          setStartAnimation(true)
-        }, 2000)
+        // Start animation immediately after showing SVG
+        requestAnimationFrame(() => {
+          startDistanceBasedAnimation()
+        })
         
-        // Animation completes after 9 seconds (2s delay + 7s animation)
+        // Show quote 3.5 seconds after animation starts
         setTimeout(() => {
-          console.log('🚨🚨🚨 ANIMATION COMPLETE TIMEOUT FIRED!')
-          
-          // IMMEDIATELY call onComplete - no complex state clearing
-          console.log('🚨 Calling onComplete() RIGHT NOW')
-          onComplete()
-          console.log('🚨 onComplete() finished - checking if Easter egg is gone...')
-        }, 9000) // 9s total animation (includes 2s hold + 7s movement)
+          console.log('🎬 3.5s delay complete - showing quote...')
+          setShowQuote(true)
+          fadeInText(selectedSilhouette.quote)
+        }, 3500)
       }
       
       startAnimation()
@@ -160,13 +246,13 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
 
     return () => {
       if (quoteTimeoutRef.current) clearTimeout(quoteTimeoutRef.current)
-      if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current)
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
     }
   }, [isActive, isAnimating, onComplete])
 
   console.log('🔍 EASTER EGG RENDER CHECK - isActive:', isActive, 'currentSilhouette:', currentSilhouette?.name)
   
-  if (!isActive || !currentSilhouette) {
+  if (!isActive) {
     console.log('🔍 Easter egg NOT rendering - returning null')
     return null
   }
@@ -175,70 +261,12 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
 
   return (
     <>
-      {/* Custom CSS animations */}
+      {/* Minimal CSS for fade-in */}
       <style jsx>{`
-        @keyframes slight-bobbing {
-          0% { transform: translateX(-50px) translateY(calc(-50% + 0px)) scale(0.28); }
-          10% { transform: translateX(calc(10vw - 50px)) translateY(calc(-50% - 2px)) scale(0.28); }
-          20% { transform: translateX(calc(20vw - 50px)) translateY(calc(-50% - 3px)) scale(0.28); }
-          30% { transform: translateX(calc(30vw - 50px)) translateY(calc(-50% - 2px)) scale(0.28); }
-          40% { transform: translateX(calc(40vw - 50px)) translateY(calc(-50% + 0px)) scale(0.28); }
-          50% { transform: translateX(calc(50vw - 50px)) translateY(calc(-50% + 2px)) scale(0.28); }
-          60% { transform: translateX(calc(60vw - 50px)) translateY(calc(-50% + 3px)) scale(0.28); }
-          70% { transform: translateX(calc(70vw - 50px)) translateY(calc(-50% + 2px)) scale(0.28); }
-          80% { transform: translateX(calc(80vw - 50px)) translateY(calc(-50% + 0px)) scale(0.28); }
-          90% { transform: translateX(calc(90vw - 50px)) translateY(calc(-50% - 2px)) scale(0.28); }
-          100% { transform: translateX(calc(100vw + 300px)) translateY(calc(-50% + 0px)) scale(0.28); }
-        }
-        
-        @keyframes slow-clockwise-spin {
-          0% { transform: translateX(-30px) translateY(-50%) scale(0.28) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 150px)) translateY(-50%) scale(0.28) rotate(180deg); }
-        }
-        
-        @keyframes slow-counterclockwise-spin {
-          0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
-          22% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
-          100% { transform: translateX(calc(100vw + 400px)) translateY(-50%) scale(0.28) rotate(-180deg); }
-        }
-        
-        @keyframes slight-vibration {
-          0% { transform: translateX(-50px) translateY(-50%) scale(0.28); }
-          10% { transform: translateX(10vw) translateY(calc(-50% - 1px)) scale(0.28); }
-          20% { transform: translateX(20vw) translateY(calc(-50% + 1px)) scale(0.28); }
-          30% { transform: translateX(30vw) translateY(calc(-50% - 1px)) scale(0.28); }
-          40% { transform: translateX(40vw) translateY(calc(-50% + 1px)) scale(0.28); }
-          50% { transform: translateX(50vw) translateY(calc(-50% - 1px)) scale(0.28); }
-          60% { transform: translateX(60vw) translateY(calc(-50% + 1px)) scale(0.28); }
-          70% { transform: translateX(70vw) translateY(calc(-50% - 1px)) scale(0.28); }
-          80% { transform: translateX(80vw) translateY(calc(-50% + 1px)) scale(0.28); }
-          90% { transform: translateX(90vw) translateY(calc(-50% - 1px)) scale(0.28); }
-          90% { transform: translateX(calc(90vw)) translateY(-50%) scale(0.28); opacity: 1; }
-          95% { transform: translateX(calc(100vw + 50px)) translateY(-50%) scale(0.28); opacity: 1; }
-          100% { transform: translateX(calc(100vw + 800px)) translateY(-50%) scale(0.28); opacity: 0; }
-        }
-        
-        @keyframes easteregg-fadeout {
-          0% { opacity: 1; }
-          100% { opacity: 0; }
-        }
-        
         @keyframes fade-in {
           0% { opacity: 0; }
           100% { opacity: 1; }
         }
-        
-        .animate-slight-bobbing { animation: slight-bobbing 7s linear forwards; }
-        .animate-slow-clockwise-spin { animation: slow-clockwise-spin 7s linear forwards; }
-        .animate-slow-counterclockwise-spin { 
-          animation: slow-counterclockwise-spin 9s linear forwards;
-        }
-        
-        .svg-hidden {
-          opacity: 0;
-          transform: translateX(-50px) translateY(-50%) scale(0.28);
-        }
-        .animate-slight-vibration { animation: slight-vibration 7s linear forwards; }
         
         .typewriter {
           font-family: 'Orbitron', 'Space Mono', 'Courier New', monospace;
@@ -249,7 +277,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
 
       {/* Full screen overlay with sun color */}
       <div 
-        className={isAnimating ? "fixed inset-0 z-50" : "fixed inset-0 z-50 easteregg-ending"}
+        className={`easter-egg-overlay fixed inset-0 z-50 ${isAnimating ? "" : "easteregg-ending"}`}
         style={{ 
           backgroundColor: sunColor,
           width: '100vw',
@@ -257,26 +285,28 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           overflow: 'hidden' // Force hide anything outside viewport
         }}
       >
-        {/* Animated silhouette - FORCE OFF-SCREEN EXIT */}
-        <div
-          ref={animationRef}
-          className={getMotionClass(currentSilhouette.motion)}
-          style={{ 
-            position: 'fixed',
-            width: '50px',
-            height: '50px',
-            left: '-50px', // Start further left
-            top: '50%',
-            zIndex: 9999,
-            margin: 0,
-            padding: 0
-          }}
-          dangerouslySetInnerHTML={{ __html: svgContent }}
-        />
+
+        {/* Animated silhouette - distance-based positioning */}
+        {showSvg && currentSilhouette && (
+          <div
+            ref={animationRef}
+            style={{ 
+              position: 'fixed',
+              left: '0px',
+              top: '50%',
+              zIndex: 9999,
+              margin: 0,
+              padding: 0,
+              transform: `translateX(-500px) translateY(-50%) scale(0.28)`, // Temporary position, will be updated by animation
+              willChange: 'transform'
+            }}
+            dangerouslySetInnerHTML={{ __html: svgContent }}
+          />
+        )}
         
         {/* Quote display - Both quote and movie info always rendered in final positions */}
         {showQuote && (
-          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8">
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2 max-w-4xl px-8 easter-egg-quote">
             <div className="text-center">
               <p 
                 className="text-lg md:text-xl lg:text-2xl text-black mb-4 cursor-pointer" 
@@ -287,6 +317,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
                   animation: 'fade-in 0.8s ease-in forwards'
                 }}
                 onMouseEnter={() => setShowMovieInfo(true)}
+                onMouseLeave={() => setShowMovieInfo(false)}
               >
                 {displayedQuote}
               </p>
@@ -303,7 +334,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
                   height: '1.5rem' // Reserve space to prevent layout shift
                 }}
               >
-                {currentSilhouette.movie} ({currentSilhouette.year})
+                {currentSilhouette?.movie} ({currentSilhouette?.year})
               </p>
             </div>
           </div>

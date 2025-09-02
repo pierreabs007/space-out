@@ -1016,6 +1016,49 @@ function EnhancedEarth({
   )
 }
 
+// Create simple Jupiter texture using Canvas
+const createJupiterTexture = () => {
+  if (typeof window === 'undefined') return null
+  
+  const canvas = document.createElement('canvas')
+  canvas.width = 512
+  canvas.height = 256
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return null
+
+  // Draw horizontal bands
+  const bandHeight = canvas.height / 12
+  for (let i = 0; i < 12; i++) {
+    const y = i * bandHeight
+    
+    // Alternate between light and dark bands
+    if (i % 2 === 0) {
+      // Light zones (cream/beige)
+      ctx.fillStyle = i % 4 === 0 ? '#F0E6D2' : '#E8DCC0'
+    } else {
+      // Dark belts (lighter browns for less contrast)
+      ctx.fillStyle = i % 3 === 1 ? '#D4B896' : '#C4A484'
+    }
+    
+    ctx.fillRect(0, y, canvas.width, bandHeight)
+  }
+
+  // Add Great Red Spot
+  const grsX = canvas.width * 0.3
+  const grsY = canvas.height * 0.65
+  const grsWidth = canvas.width * 0.12
+  const grsHeight = canvas.height * 0.08
+
+  ctx.fillStyle = '#CC4C39'
+  ctx.beginPath()
+  ctx.ellipse(grsX, grsY, grsWidth / 2, grsHeight / 2, 0, 0, 2 * Math.PI)
+  ctx.fill()
+
+  const texture = new CanvasTexture(canvas)
+  texture.needsUpdate = true
+  return texture
+}
+
 // Enhanced planet with moons and realistic orbital mechanics
 function Planet({ 
   distance, 
@@ -1048,6 +1091,17 @@ function Planet({
 }) {
   const groupRef = useRef<Group>(null)
   const planetGroupRef = useRef<Group>(null)
+  
+  // Create Jupiter texture (only for Jupiter)
+  const jupiterTexture = useMemo(() => {
+    if (name === 'Jupiter') {
+      console.log('🪐 Creating Jupiter texture in SolarSystemEnhanced...')
+      const texture = createJupiterTexture()
+      console.log('🪐 Jupiter texture created:', texture ? 'Success' : 'Failed')
+      return texture
+    }
+    return null
+  }, [name])
 
   useFrame((state) => {
     if (groupRef.current) {
@@ -1102,8 +1156,11 @@ function Planet({
           onPointerLeave={() => onUnhover()}
           rotation={[0, 0, axialTilt]}
         >
-          <sphereGeometry args={[radius, 16, 16]} />
-          <meshBasicMaterial color={color} />
+          <sphereGeometry args={[radius, 32, 32]} />
+          <meshBasicMaterial 
+            map={name === 'Jupiter' ? jupiterTexture : undefined}
+            color={name === 'Jupiter' && jupiterTexture ? '#ffffff' : (name === 'Jupiter' ? '#ff0000' : color)} 
+          />
         </mesh>
         
         {/* Moons */}

@@ -79,6 +79,38 @@
       "quote": "What is essential is invisible to the eye",
       "movie": "The Little Prince",
       "year": 2015
+    },
+    {
+      "id": "wile_e_coyote",
+      "name": "Wile E. Coyote on ACME Rocket",
+      "svgPath": "/movie_shapes/wile_e_coyote_rocket.svg",
+      "quote": "Meep, meep!",
+      "movie": "Looney Tunes",
+      "year": 1949
+    },
+    {
+      "id": "et",
+      "name": "E.T. the Extra-Terrestrial",
+      "svgPath": "/movie_shapes/et.svg",
+      "quote": "E.T. phone home",
+      "movie": "E.T. the Extra-Terrestrial",
+      "year": 1982
+    },
+    {
+      "id": "saturn_v",
+      "name": "Saturn V Rocket",
+      "svgPath": "/movie_shapes/saturn_v.svg",
+      "quote": "That's one small step for man, one giant leap for mankind",
+      "movie": "First Man",
+      "year": 2018
+    },
+    {
+      "id": "wall_e",
+      "name": "WALL-E Robot",
+      "svgPath": "/movie_shapes/wall_e.svg",
+      "quote": "Eeeevvvvaaaaa!",
+      "movie": "WALL-E",
+      "year": 2008
     }
   ]
 }
