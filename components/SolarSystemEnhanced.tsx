@@ -6,6 +6,7 @@ import { OrbitControls } from '@react-three/drei'
 import { Mesh, Group, InstancedMesh, Object3D, Vector2, Raycaster, Vector3, CanvasTexture, RepeatWrapping, ClampToEdgeWrapping, BackSide, TextureLoader } from 'three'
 import { RotateCcw, EyeOff, Eye, Maximize, Info, ArrowLeft } from 'lucide-react'
 import SunEasterEgg from './SunEasterEgg'
+import MilkyWayEasterEgg from './MilkyWayEasterEgg'
 
 // Video Cache Context for preloading celestial body videos
 interface VideoCache {
@@ -1383,7 +1384,10 @@ function CameraSystem({
   cameraFrozen,
   setCameraFrozen,
   frozenCameraPosition,
-  setFrozenCameraPosition
+  setFrozenCameraPosition,
+  onMilkyWayEasterEggTrigger,
+  milkyWayEasterEggActive,
+  milkyWayEasterEggCooldown
 }: { 
   automaticMode: boolean, 
   speed: number,
@@ -1397,7 +1401,10 @@ function CameraSystem({
   cameraFrozen: boolean,
   setCameraFrozen: (frozen: boolean) => void,
   frozenCameraPosition: {x: number, y: number, z: number} | null,
-  setFrozenCameraPosition: (pos: {x: number, y: number, z: number} | null) => void
+  setFrozenCameraPosition: (pos: {x: number, y: number, z: number} | null) => void,
+  onMilkyWayEasterEggTrigger: () => void,
+  milkyWayEasterEggActive: boolean,
+  milkyWayEasterEggCooldown: boolean
 }) {
   const { camera } = useThree()
   const orbitControlsRef = useRef<any>(null)
@@ -1440,12 +1447,24 @@ function CameraSystem({
       return // Skip normal camera movement
     }
     
+    // Check for maximum zoom-out trigger (only in manual mode)
+    if (!automaticMode && !milkyWayEasterEggActive && !milkyWayEasterEggCooldown && !easterEggActive) {
+      const cameraDistance = camera.position.distanceTo(new Vector3(0, 0, 0))
+      const maxDistance = 3800 // Near the maximum zoom limit (4000)
+      
+      if (cameraDistance >= maxDistance) {
+        console.log('🌌 Maximum zoom detected - triggering Milky Way Easter Egg')
+        onMilkyWayEasterEggTrigger()
+        return // Skip normal camera movement
+      }
+    }
+    
     if (automaticMode) {
       // AUTOMATIC MODE: Camera moves, no manual controls
       const time = state.clock.elapsedTime * speed
       const radius = 120  // Much closer - just outside Uranus orbit (100 units)
       // Use user-controlled vertical movement range
-      const verticalTime = state.clock.elapsedTime * speed * 1.0 // 5x faster vertical movement
+      const verticalTime = state.clock.elapsedTime * speed * 3.0 // 3x faster vertical movement
       
       // Convert angle degrees to height values
       // Map -90° to 90° range to actual height values
@@ -1575,13 +1594,14 @@ function SolarSystemEnhanced() {
   const [showKuiperBelt, setShowKuiperBelt] = useState(true)
   const [cameraAnimation, setCameraAnimation] = useState(true)
   const [cameraSpeed, setCameraSpeed] = useState(0.02) // Default 2% speed
-  const [cameraVerticalMin, setCameraVerticalMin] = useState(15) // Default lower bound 15°
+  const [cameraVerticalMin, setCameraVerticalMin] = useState(-5) // Default lower bound -5°
   const [cameraVerticalMax, setCameraVerticalMax] = useState(60) // Default upper bound 60°
   const [hoveredObject, setHoveredObject] = useState<any>(null)
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [controlsVisible, setControlsVisible] = useState(false)
   const [controlsPinned, setControlsPinned] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
+  const [controlsHovered, setControlsHovered] = useState(false)
   
   // Easter egg state
   const [easterEggActive, setEasterEggActive] = useState(false)
@@ -1589,6 +1609,10 @@ function SolarSystemEnhanced() {
   const [easterEggDelayTimer, setEasterEggDelayTimer] = useState<NodeJS.Timeout | null>(null)
   const [cameraFrozen, setCameraFrozen] = useState(false)
   const [frozenCameraPosition, setFrozenCameraPosition] = useState<{x: number, y: number, z: number} | null>(null)
+  
+  // Milky Way Easter egg state
+  const [milkyWayEasterEggActive, setMilkyWayEasterEggActive] = useState(false)
+  const [milkyWayEasterEggCooldown, setMilkyWayEasterEggCooldown] = useState(false)
   
   // Easter egg handlers
   const handleEasterEggTrigger = () => {
@@ -1609,7 +1633,7 @@ function SolarSystemEnhanced() {
   }
   
   const handleEasterEggComplete = () => {
-    console.log('🚨 Easter egg complete - unfreezing camera and moving back')
+    console.log('🚨 Easter egg complete - showing close-up then zooming out to Mars orbit')
     setEasterEggActive(false)
     setEasterEggCooldown(true)
     
@@ -1619,14 +1643,116 @@ function SolarSystemEnhanced() {
       setEasterEggDelayTimer(null)
     }
     
-    // Unfreeze camera and move it to safe distance
-    setCameraFrozen(false)
-    setFrozenCameraPosition(null)
+    // First: Show close-up sun view (where the Easter Egg was triggered)
+    setCameraFrozen(true)
+    setFrozenCameraPosition({ x: 0, y: 5, z: 8 }) // Close-up sun view
     
-    // Long cooldown after completion
+    // After 0.5 seconds, start rapid zoom-out to Mars orbit over 1 second
+    setTimeout(() => {
+      console.log('🚨 Starting rapid zoom-out to Mars orbit')
+      // Animate zoom-out by updating frozen position over time
+      let progress = 0
+      const startPos = { x: 0, y: 5, z: 8 } // Close-up
+      const endPos = { x: 0, y: 45, z: 60 } // Mars orbit
+      const duration = 1000 // 1 second
+      const startTime = Date.now()
+      
+      const animateZoom = () => {
+        const elapsed = Date.now() - startTime
+        progress = Math.min(elapsed / duration, 1)
+        
+        // Interpolate between start and end positions
+        const currentPos = {
+          x: startPos.x + (endPos.x - startPos.x) * progress,
+          y: startPos.y + (endPos.y - startPos.y) * progress,
+          z: startPos.z + (endPos.z - startPos.z) * progress
+        }
+        
+        setFrozenCameraPosition(currentPos)
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateZoom)
+        } else {
+          // Zoom complete - hold at Mars orbit for 2 seconds then release
+          setTimeout(() => {
+            setCameraFrozen(false)
+            setFrozenCameraPosition(null)
+          }, 2000)
+        }
+      }
+      
+      requestAnimationFrame(animateZoom)
+    }, 500) // 0.5 second delay to show close-up first
+    
+    // Shorter cooldown to allow retriggering
     setTimeout(() => {
       setEasterEggCooldown(false)
-    }, 10000) // 10 second cooldown after completion
+    }, 5000) // 5 second cooldown after completion
+  }
+  
+  // Milky Way Easter egg handlers
+  const handleMilkyWayEasterEggTrigger = () => {
+    if (milkyWayEasterEggActive || milkyWayEasterEggCooldown || easterEggActive) {
+      console.log('🌌 Milky Way Easter egg trigger BLOCKED')
+      return
+    }
+    
+    console.log('🌌 Milky Way Easter Egg Triggered!')
+    setMilkyWayEasterEggActive(true)
+    setMilkyWayEasterEggCooldown(true)
+    
+    // Reset cooldown after 10 seconds
+    setTimeout(() => {
+      console.log('🌌 Milky Way Easter egg cooldown reset')
+      setMilkyWayEasterEggCooldown(false)
+    }, 10000)
+  }
+  
+  const handleMilkyWayEasterEggComplete = () => {
+    console.log('🌌 Milky Way Easter egg complete - zooming back to default view')
+    setMilkyWayEasterEggActive(false)
+    setMilkyWayEasterEggCooldown(true)
+    
+    // Animate zoom back to default solar system view
+    setCameraFrozen(true)
+    
+    // Zoom in from far out to default view over 2 seconds
+    let progress = 0
+    const startPos = { x: 0, y: 200, z: 300 } // Far out position
+    const endPos = { x: 0, y: 25, z: 35 } // Default view
+    const duration = 2000 // 2 seconds
+    const startTime = Date.now()
+    
+    const animateZoomIn = () => {
+      const elapsed = Date.now() - startTime
+      progress = Math.min(elapsed / duration, 1)
+      
+      // Interpolate between start and end positions
+      const currentPos = {
+        x: startPos.x + (endPos.x - startPos.x) * progress,
+        y: startPos.y + (endPos.y - startPos.y) * progress,
+        z: startPos.z + (endPos.z - startPos.z) * progress
+      }
+      
+      setFrozenCameraPosition(currentPos)
+      
+      if (progress < 1) {
+        requestAnimationFrame(animateZoomIn)
+      } else {
+        // Zoom complete - release camera
+        setTimeout(() => {
+          setCameraFrozen(false)
+          setFrozenCameraPosition(null)
+        }, 1000) // Hold at default view for 1 second
+      }
+    }
+    
+    requestAnimationFrame(animateZoomIn)
+    
+    // Shorter cooldown after completion
+    setTimeout(() => {
+      setMilkyWayEasterEggCooldown(false)
+    }, 5000) // 5 second cooldown
   }
 
   // Keyboard controls for camera movement and mode switching
@@ -1643,11 +1769,12 @@ function SolarSystemEnhanced() {
         return
       }
 
-      // Arrow keys - only for mode switching in Automatic Mode
-      const isArrowKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)
+      // Arrow keys and Z/X keys - switch to Manual Mode in Automatic Mode
+      const isControlKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x'].includes(event.key.toLowerCase())
       
-      if (isArrowKey && cameraAnimation) {
-        // If in Automatic Mode, switch to Manual Mode when any arrow key is pressed
+      if (isControlKey && cameraAnimation) {
+        // If in Automatic Mode, switch to Manual Mode when any control key is pressed
+        console.log('🎮 Control key pressed in Auto mode - switching to Manual')
         setCameraAnimation(false)
         return
       }
@@ -1668,14 +1795,17 @@ function SolarSystemEnhanced() {
   const saturnData = planetData.find(p => p.name === 'Saturn')
 
   const handleObjectHover = (info: any) => {
+    if (easterEggActive) return
     setHoveredObject(info)
   }
 
   const handleObjectUnhover = () => {
+    if (easterEggActive) return
     setHoveredObject(null)
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (easterEggActive) return
     setMousePosition({ x: e.clientX, y: e.clientY })
     setLastMouseMove(Date.now())
     if (!controlsVisible && !controlsPinned) {
@@ -1683,25 +1813,42 @@ function SolarSystemEnhanced() {
     }
   }
 
-  // Auto-hide controls after 3 seconds of no mouse movement (only when not pinned)
+  const handleMouseInteraction = (interactionType: string) => {
+    if (easterEggActive) return
+    if (cameraAnimation) {
+      console.log(`🎮 ${interactionType} in Auto mode - switching to Manual`)
+      setCameraAnimation(false)
+    }
+  }
+
+  // Auto-hide controls after 0.5 seconds of no mouse movement (only when not pinned or hovered)
   React.useEffect(() => {
     const interval = setInterval(() => {
-      if (Date.now() - lastMouseMove > 3000 && !controlsPinned) {
+      if (Date.now() - lastMouseMove > 500 && !controlsPinned && !controlsHovered) {
         setControlsVisible(false)
       }
-    }, 1000)
+    }, 250)
     return () => clearInterval(interval)
-  }, [lastMouseMove, controlsPinned])
+  }, [lastMouseMove, controlsPinned, controlsHovered])
 
   return (
     <div 
       className="w-full h-screen relative overflow-hidden bg-black"
       onMouseMove={handleMouseMove}
+      onMouseDown={(e) => {
+        if (e.button === 0) handleMouseInteraction('Left click') // Left click
+        if (e.button === 2) handleMouseInteraction('Right click') // Right click
+      }}
+      onWheel={() => handleMouseInteraction('Mouse scroll')}
+      onContextMenu={(e) => e.preventDefault()} // Prevent right-click menu
     >
       {/* Control Panel */}
       <div 
         className={`absolute top-4 left-4 z-10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl space-y-3 max-w-xs shadow-2xl transition-opacity duration-500 ${(controlsVisible || controlsPinned) ? 'opacity-100' : 'opacity-0'}`}
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
+        onMouseEnter={() => { setControlsHovered(true); setControlsVisible(true) }}
+        onMouseLeave={() => setControlsHovered(false)}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center">
           <h2 className="text-base font-semibold">Mission Control</h2>
@@ -1722,7 +1869,7 @@ function SolarSystemEnhanced() {
                 setTimeScale(250)
                 setCameraSpeed(0.02)
                 setCameraAnimation(true)
-                setCameraVerticalMin(15)
+                setCameraVerticalMin(-5)
                 setCameraVerticalMax(60)
                 setShowSun(true)
                 setShowOrbits(true)
@@ -1876,7 +2023,7 @@ function SolarSystemEnhanced() {
           {/* Velocity Control Panel */}
           <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-[10px] font-semibold text-gray-300 tracking-wider">VELOCITY CONTROL</div>
+              <div className="text-[10px] font-semibold text-gray-300 tracking-wider leading-tight">VELOCITY CONTROL</div>
               <div className="px-1 py-0.5 bg-green-500/20 border border-green-400/40 rounded text-[7px] text-green-300 font-medium">
                 {cameraAnimation ? 'ACTIVE' : 'STANDBY'}
               </div>
@@ -1885,43 +2032,140 @@ function SolarSystemEnhanced() {
             {/* Large Display */}
             <div className="bg-black/60 rounded border border-cyan-400/20 p-4 mb-3 text-center h-28 flex flex-col justify-center">
               <div className="text-2xl font-mono text-cyan-300 font-bold tracking-wider">
-                {String((cameraSpeed * 100).toFixed(1)).padStart(5, '0')}%
+                {String(((cameraSpeed / 0.2) * 100).toFixed(1)).padStart(5, '0')}%
               </div>
-              <div className="text-[11px] text-gray-400 mt-0.5 font-light">CAMERA VELOCITY</div>
+              <div className="text-[10px] text-gray-400 mt-0.5 font-light">CAMERA VELOCITY</div>
             </div>
             
-            {/* Slider */}
-            <input
-              type="range"
-              min="0.01"
-              max="0.2"
-              step="0.01"
-              value={cameraSpeed}
-              onChange={(e) => setCameraSpeed(Number(e.target.value))}
-              className="w-full mb-3 accent-cyan-400"
-            />
+            {/* Futuristic Slider */}
+            <div className="relative w-full mb-4 pb-2">
+              {/* Track */}
+              <div className="relative h-1 rounded-sm" style={{
+                background: 'linear-gradient(to right, transparent, rgba(0, 200, 255, 0.3))'
+              }}>
+                {/* Active/Filled Track */}
+                <div 
+                  className="absolute h-1 rounded-sm"
+                  style={{
+                    width: `${(cameraSpeed / 0.2) * 100}%`,
+                    background: '#00ffff',
+                    boxShadow: '0 0 10px rgba(0, 255, 255, 0.6)'
+                  }}
+                ></div>
+              </div>
+              
+              <input
+                type="range"
+                min="0"
+                max="0.2"
+                step="0.01"
+                value={cameraSpeed}
+                onChange={(e) => setCameraSpeed(Number(e.target.value))}
+                className="absolute w-full appearance-none bg-transparent cursor-pointer slider-futuristic"
+                style={{ top: '-15px', height: '32px' }}
+              />
+              
+              {/* Scale markers and labels */}
+              <div className="relative mt-2">
+                {/* Minor ticks (smaller, dimmer) */}
+                {[5, 10, 15, 20, 30, 35, 40, 45, 55, 60, 65, 70, 80, 85, 90, 95].map(position => (
+                  <div 
+                    key={`minor-${position}`}
+                    className="absolute"
+                    style={{ 
+                      left: `${position}%`, 
+                      transform: 'translateX(-50%)'
+                    }}
+                  >
+                    <div className="flex flex-col items-center">
+                      <div style={{ 
+                        width: '0.5px', 
+                        height: '3px',
+                        backgroundColor: 'rgba(100, 200, 255, 0.25)',
+                        marginBottom: '0.5px'
+                      }}></div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Major ticks (with numbers) */}
+                {[
+                  { value: '0', position: 0 },
+                  { value: '.25', position: 25 },
+                  { value: '.5', position: 50 },
+                  { value: '.75', position: 75 },
+                  { value: '1', position: 100 }
+                ].map(({ value, position }) => (
+                  <div 
+                    key={value} 
+                    className="absolute"
+                    style={{ 
+                      left: `${position}%`, 
+                      transform: value === '0' ? 'translateX(0%)' : value === '1' ? 'translateX(-100%)' : 'translateX(-50%)'
+                    }}
+                  >
+                    <div className="flex flex-col" style={{ alignItems: value === '0' ? 'flex-start' : value === '1' ? 'flex-end' : 'center' }}>
+                      <div className="w-px mb-0.5" style={{ backgroundColor: 'rgba(100, 200, 255, 0.5)', height: '6px' }}></div>
+                      <span 
+                        className="text-[9px] font-thin font-mono" 
+                        style={{ color: '#00ffff' }}
+                      >
+                        {value}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <style jsx>{`
+                .slider-futuristic::-webkit-slider-thumb {
+                  appearance: none;
+                  width: 8px;
+                  height: 19px;
+                  border-radius: 4px;
+                  background: linear-gradient(135deg, #00ffff, #0099ff);
+                  border: 1px solid rgba(255, 255, 255, 0.9);
+                  cursor: pointer;
+                  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+                  transition: all 0.2s ease;
+                }
+                .slider-futuristic::-webkit-slider-thumb:hover {
+                  box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+                }
+                .slider-futuristic::-moz-range-thumb {
+                  width: 8px;
+                  height: 19px;
+                  border-radius: 4px;
+                  background: linear-gradient(135deg, #00ffff, #0099ff);
+                  border: 1px solid rgba(255, 255, 255, 0.9);
+                  cursor: pointer;
+                  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+                  border: none;
+                }
+              `}</style>
+            </div>
             
             {/* Control Buttons */}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2" style={{ marginTop: '22px' }}>
               <button
                 onClick={() => setCameraAnimation(false)}
-                className={`px-3 py-2 text-xs font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
+                className={`px-2 py-1 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                   !cameraAnimation 
                     ? 'bg-red-500/20 border-red-400/50 text-red-300' 
                     : 'bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600/50'
                 }`}
               >
-                STOP
+                STOP CAMERA
               </button>
               <button
                 onClick={() => setCameraAnimation(true)}
-                className={`px-3 py-2 text-xs font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
+                className={`px-2 py-1 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                   cameraAnimation 
                     ? 'bg-blue-500/20 border-blue-400/50 text-blue-300' 
                     : 'bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600/50'
                 }`}
               >
-                AUTO
+                AUTO PILOT
               </button>
             </div>
           </div>
@@ -1929,7 +2173,7 @@ function SolarSystemEnhanced() {
           {/* Elevation Control Panel */}
           <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
             <div className="flex items-center justify-between mb-2">
-              <div className="text-[10px] font-semibold text-gray-300 tracking-wider">ELEVATION CONTROL</div>
+              <div className="text-[10px] font-semibold text-gray-300 tracking-wider leading-tight">ELEVATION CONTROL</div>
               <div className="px-1 py-0.5 bg-orange-500/20 border border-orange-400/40 rounded text-[7px] text-orange-300 font-medium">
                 NOMINAL
               </div>
@@ -1940,25 +2184,29 @@ function SolarSystemEnhanced() {
               <div className="text-xl font-mono text-cyan-300 font-bold tracking-wider">
                 <span className="text-xs text-cyan-300">min</span> {cameraVerticalMin}°
               </div>
-              <div className="text-xl font-mono text-cyan-300 font-bold tracking-wider mt-0">
+              <div className="text-xl font-mono text-cyan-300 font-bold tracking-wider" style={{ marginTop: '-0.2rem' }}>
                 <span className="text-xs text-cyan-300">max</span> {cameraVerticalMax}°
               </div>
-              <div className="text-[11px] text-gray-400 mt-0.5 font-light">VIEWING ANGLE RANGE</div>
+              <div className="text-[10px] text-gray-400 mt-0.5 font-light">VIEWING ANGLE RANGE</div>
             </div>
             
-            {/* Dual Range Slider */}
-            <div className="relative w-full h-6 mb-4">
+            {/* Futuristic Dual Range Slider */}
+            <div className="relative w-full h-8 mb-4 pb-2">
               {/* Track */}
-              <div className="absolute w-full h-2 bg-gray-700 rounded-full top-2"></div>
-              
-              {/* Active range highlight */}
-              <div 
-                className="absolute h-2 bg-cyan-400/60 rounded-full top-2"
-                style={{
-                  left: `${((cameraVerticalMin + 90) / 180) * 100}%`,
-                  width: `${((cameraVerticalMax - cameraVerticalMin) / 180) * 100}%`
-                }}
-              ></div>
+              <div className="relative h-1 rounded-sm mt-4" style={{
+                background: 'linear-gradient(to right, transparent, rgba(0, 200, 255, 0.3))'
+              }}>
+                {/* Active range highlight */}
+                <div 
+                  className="absolute h-1 rounded-sm"
+                  style={{
+                    left: `${((cameraVerticalMin + 90) / 180) * 100}%`,
+                    width: `${((cameraVerticalMax - cameraVerticalMin) / 180) * 100}%`,
+                    background: '#00ffff',
+                    boxShadow: '0 0 10px rgba(0, 255, 255, 0.6)'
+                  }}
+                ></div>
+              </div>
               
               {/* Max handle */}
               <input
@@ -1973,12 +2221,14 @@ function SolarSystemEnhanced() {
                     setCameraVerticalMax(newMax)
                   }
                 }}
-                className="absolute w-full h-6 appearance-none bg-transparent cursor-pointer accent-cyan-400"
+                className="absolute w-full appearance-none bg-transparent cursor-pointer slider-dual-futuristic"
                 style={{
                   background: 'transparent',
                   pointerEvents: 'auto',
                   WebkitAppearance: 'none',
-                  zIndex: cameraVerticalMax <= cameraVerticalMin + 10 ? 3 : 1
+                  zIndex: 2,
+                  top: '-15px',
+                  height: '32px'
                 }}
               />
               
@@ -1995,22 +2245,95 @@ function SolarSystemEnhanced() {
                     setCameraVerticalMin(newMin)
                   }
                 }}
-                className="absolute w-full h-6 appearance-none bg-transparent cursor-pointer accent-cyan-400"
+                className="absolute w-full appearance-none bg-transparent cursor-pointer slider-dual-futuristic"
                 style={{
                   background: 'transparent',
                   pointerEvents: 'auto',
                   WebkitAppearance: 'none',
-                  zIndex: cameraVerticalMin >= cameraVerticalMax - 10 ? 3 : 1
+                  zIndex: 1,
+                  top: '-15px',
+                  height: '32px'
                 }}
               />
+              
+              <style jsx>{`
+                .slider-dual-futuristic::-webkit-slider-thumb {
+                  appearance: none;
+                  width: 8px;
+                  height: 19px;
+                  border-radius: 4px;
+                  background: linear-gradient(135deg, #00ffff, #0099ff);
+                  border: 1px solid rgba(255, 255, 255, 0.9);
+                  cursor: pointer;
+                  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+                  transition: all 0.2s ease;
+                }
+                .slider-dual-futuristic::-webkit-slider-thumb:hover {
+                  box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+                }
+                .slider-dual-futuristic::-moz-range-thumb {
+                  width: 8px;
+                  height: 19px;
+                  border-radius: 4px;
+                  background: linear-gradient(135deg, #00ffff, #0099ff);
+                  border: 1px solid rgba(255, 255, 255, 0.9);
+                  cursor: pointer;
+                  box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+                  border: none;
+                }
+              `}</style>
+              
+              {/* Scale markers and labels */}
+              <div className="relative mt-2" style={{ marginBottom: '22px' }}>
+                {/* Minor ticks (smaller, dimmer) */}
+                {[5.5, 11, 16.5, 22, 27.5, 33, 38.5, 44.5, 55.5, 61, 66.5, 72, 77.5, 83, 88.5, 94.5].map(position => (
+                  <div 
+                    key={`minor-${position}`}
+                    className="absolute"
+                    style={{ 
+                      left: `${position}%`, 
+                      transform: 'translateX(-50%)'
+                    }}
+                  >
+                    <div className="flex flex-col items-center">
+                      <div style={{ 
+                        width: '0.5px', 
+                        height: '3px',
+                        backgroundColor: 'rgba(100, 200, 255, 0.25)',
+                        marginBottom: '0.5px'
+                      }}></div>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Major ticks (with numbers) */}
+                {[
+                  { value: '-90°', position: 0 },
+                  { value: '0°', position: 50 },
+                  { value: '90°', position: 100 }
+                ].map(({ value, position }) => (
+                  <div 
+                    key={value} 
+                    className="absolute"
+                    style={{ 
+                      left: `${position}%`, 
+                      transform: value === '-90°' ? 'translateX(0%)' : value === '90°' ? 'translateX(-100%)' : 'translateX(-50%)'
+                    }}
+                  >
+                    <div className="flex flex-col" style={{ alignItems: value === '-90°' ? 'flex-start' : value === '90°' ? 'flex-end' : 'center' }}>
+                      <div className="w-px mb-0.5" style={{ backgroundColor: 'rgba(100, 200, 255, 0.5)', height: '6px' }}></div>
+                      <span 
+                        className="text-[9px] font-thin font-mono" 
+                        style={{ color: '#00ffff' }}
+                      >
+                        {value}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            
-            {/* Range Labels */}
-            <div className="flex justify-between text-xs text-gray-400">
-              <span>0°</span>
-              <span>45°</span>
-              <span>90°</span>
-            </div>
+
           </div>
           
         </div>
@@ -2018,7 +2341,7 @@ function SolarSystemEnhanced() {
         {/* NASA-Style Orbital Speed Control - Full Width */}
         <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[10px] font-semibold text-gray-300 tracking-wider">TIME ACCELERATION</div>
+            <div className="text-[10px] font-semibold text-gray-300 tracking-wider">ORBIT ACCELERATION</div>
             <div className="px-1 py-0.5 bg-green-500/20 border border-green-400/40 rounded text-[7px] text-green-300 font-medium">
               {timeScale === 0 ? 'PAUSED' : 'ACTIVE'}
             </div>
@@ -2029,25 +2352,123 @@ function SolarSystemEnhanced() {
             <div className="text-2xl font-mono text-cyan-300 font-bold tracking-wider">
               {timeScale === 0 ? 'PAUSED' : `${String(timeScale.toFixed(0)).padStart(4, '0')}×`}
             </div>
-            <div className="text-[11px] text-gray-400 mt-0.5 font-light">TIME FACTOR</div>
+            <div className="text-[10px] text-gray-400 mt-0.5 font-light">TIME FACTOR</div>
           </div>
           
-          {/* Slider */}
-          <input
-            type="range"
-            min="0"
-            max="5000"
-            step="50"
-            value={timeScale}
-            onChange={(e) => setTimeScale(Number(e.target.value))}
-            className="w-full mb-3 accent-cyan-400"
-          />
+          {/* Futuristic Slider */}
+          <div className="relative w-full mb-4 pb-2">
+            {/* Track */}
+            <div className="relative h-1 rounded-sm" style={{
+              background: 'linear-gradient(to right, transparent, rgba(0, 200, 255, 0.3))'
+            }}>
+              {/* Active/Filled Track */}
+              <div 
+                className="absolute h-1 rounded-sm"
+                style={{
+                  width: `${(timeScale / 5000) * 100}%`,
+                  background: '#00ffff',
+                  boxShadow: '0 0 10px rgba(0, 255, 255, 0.6)'
+                }}
+              ></div>
+            </div>
+            
+            <input
+              type="range"
+              min="0"
+              max="5000"
+              step="50"
+              value={timeScale}
+              onChange={(e) => setTimeScale(Number(e.target.value))}
+              className="absolute w-full appearance-none bg-transparent cursor-pointer slider-futuristic"
+              style={{ top: '-15px', height: '32px' }}
+            />
+            
+            {/* Scale markers and labels */}
+            <div className="relative mt-2">
+              {/* Minor ticks (smaller, dimmer) */}
+              {[2, 4, 6, 8, 10, 12, 14, 16, 18, 22, 24, 26, 28, 30, 32, 34, 36, 38, 42, 44, 46, 48, 50, 52, 54, 56, 58, 62, 64, 66, 68, 70, 72, 74, 76, 78, 82, 84, 86, 88, 90, 92, 94, 96, 98].map(position => (
+                <div 
+                  key={`minor-${position}`}
+                  className="absolute"
+                  style={{ 
+                    left: `${position}%`, 
+                    transform: 'translateX(-50%)'
+                  }}
+                >
+                  <div className="flex flex-col items-center">
+                    <div style={{ 
+                      width: '0.5px', 
+                      height: '3px',
+                      backgroundColor: 'rgba(100, 200, 255, 0.25)',
+                      marginBottom: '0.5px'
+                    }}></div>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Major ticks (with numbers) */}
+              {[
+                { value: '0', position: 0 },
+                { value: '1K', position: 20 },
+                { value: '2K', position: 40 },
+                { value: '3K', position: 60 },
+                { value: '4K', position: 80 },
+                { value: '5K', position: 100 }
+              ].map(({ value, position }) => (
+                <div 
+                  key={value} 
+                  className="absolute"
+                  style={{ 
+                    left: `${position}%`, 
+                    transform: value === '0' ? 'translateX(0%)' : value === '5K' ? 'translateX(-100%)' : 'translateX(-50%)'
+                  }}
+                >
+                  <div className="flex flex-col" style={{ alignItems: value === '0' ? 'flex-start' : value === '5K' ? 'flex-end' : 'center' }}>
+                    <div className="w-px mb-0.5" style={{ backgroundColor: 'rgba(100, 200, 255, 0.5)', height: '6px' }}></div>
+                    <span 
+                      className="text-[9px] font-thin font-mono" 
+                      style={{ color: '#00ffff' }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <style jsx>{`
+              .slider-futuristic::-webkit-slider-thumb {
+                appearance: none;
+                width: 8px;
+                height: 19px;
+                border-radius: 4px;
+                background: linear-gradient(135deg, #00ffff, #0099ff);
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                cursor: pointer;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+                transition: all 0.2s ease;
+              }
+              .slider-futuristic::-webkit-slider-thumb:hover {
+                box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+              }
+              .slider-futuristic::-moz-range-thumb {
+                width: 8px;
+                height: 19px;
+                border-radius: 4px;
+                background: linear-gradient(135deg, #00ffff, #0099ff);
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                cursor: pointer;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+                border: none;
+              }
+            `}</style>
+          </div>
           
           {/* Control Buttons */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-2" style={{ marginTop: '22px' }}>
             <button
               onClick={() => setTimeScale(0)}
-              className={`px-3 py-2 text-xs font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
+              className={`px-3 py-2 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                 timeScale === 0 
                   ? 'bg-red-500/20 border-red-400/50 text-red-300' 
                   : 'bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600/50'
@@ -2057,7 +2478,7 @@ function SolarSystemEnhanced() {
             </button>
             <button
               onClick={() => setTimeScale(timeScale === 0 ? 250 : timeScale)}
-              className={`px-3 py-2 text-xs font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
+              className={`px-3 py-2 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                 timeScale > 0 
                   ? 'bg-blue-500/20 border-blue-400/50 text-blue-300' 
                   : 'bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600/50'
@@ -2081,55 +2502,106 @@ function SolarSystemEnhanced() {
             <div className="flex flex-col items-center">
               <div 
                 onClick={() => setShowSun(!showSun)}
-                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-200 relative ${
+                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showSun 
-                    ? 'bg-blue-500/20 border-blue-400/50' 
-                    : 'bg-gray-700/50 border-gray-600'
+                    ? 'bg-gray-800/40 border-cyan-400/60' 
+                    : 'bg-gray-900/60 border-gray-700/40'
                 }`}
+                style={{
+                  boxShadow: showSun 
+                    ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
+                    : 'none'
+                }}
               >
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-200 ${
-                  showSun 
-                    ? 'left-6 bg-blue-400' 
-                    : 'left-0.5 bg-gray-500'
-                }`}></div>
+                <div 
+                  className={`absolute rounded-full transition-all duration-300 ${
+                    showSun 
+                      ? 'bg-cyan-400' 
+                      : 'bg-gray-500'
+                  }`}
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    top: '50%',
+                    left: showSun ? '28.5px' : '4.5px',
+                    transform: 'translateY(-50%)',
+                    boxShadow: showSun 
+                      ? '0 0 10px rgba(0, 255, 255, 0.6)' 
+                      : 'none'
+                  }}
+                ></div>
               </div>
-              <div className="text-[10px] text-white/80 mt-1 font-medium">SUN</div>
+              <div className="text-[10px] text-white/80 mt-1 font-light">SUN</div>
             </div>
             
             <div className="flex flex-col items-center">
               <div 
                 onClick={() => setShowOrbits(!showOrbits)}
-                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-200 relative ${
+                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showOrbits 
-                    ? 'bg-blue-500/20 border-blue-400/50' 
-                    : 'bg-gray-700/50 border-gray-600'
+                    ? 'bg-gray-800/40 border-cyan-400/60' 
+                    : 'bg-gray-900/60 border-gray-700/40'
                 }`}
+                style={{
+                  boxShadow: showOrbits 
+                    ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
+                    : 'none'
+                }}
               >
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-200 ${
-                  showOrbits 
-                    ? 'left-6 bg-blue-400' 
-                    : 'left-0.5 bg-gray-500'
-                }`}></div>
+                <div 
+                  className={`absolute rounded-full transition-all duration-300 ${
+                    showOrbits 
+                      ? 'bg-cyan-400' 
+                      : 'bg-gray-500'
+                  }`}
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    top: '50%',
+                    left: showOrbits ? '28.5px' : '4.5px',
+                    transform: 'translateY(-50%)',
+                    boxShadow: showOrbits 
+                      ? '0 0 10px rgba(0, 255, 255, 0.6)' 
+                      : 'none'
+                  }}
+                ></div>
               </div>
-              <div className="text-[10px] text-white/80 mt-1 font-medium">ORBITS</div>
+              <div className="text-[10px] text-white/80 mt-1 font-light">ORBITS</div>
             </div>
             
             <div className="flex flex-col items-center">
               <div 
                 onClick={() => setShowMoons(!showMoons)}
-                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-200 relative ${
+                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showMoons 
-                    ? 'bg-blue-500/20 border-blue-400/50' 
-                    : 'bg-gray-700/50 border-gray-600'
+                    ? 'bg-gray-800/40 border-cyan-400/60' 
+                    : 'bg-gray-900/60 border-gray-700/40'
                 }`}
+                style={{
+                  boxShadow: showMoons 
+                    ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
+                    : 'none'
+                }}
               >
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-200 ${
-                  showMoons 
-                    ? 'left-6 bg-blue-400' 
-                    : 'left-0.5 bg-gray-500'
-                }`}></div>
+                <div 
+                  className={`absolute rounded-full transition-all duration-300 ${
+                    showMoons 
+                      ? 'bg-cyan-400' 
+                      : 'bg-gray-500'
+                  }`}
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    top: '50%',
+                    left: showMoons ? '28.5px' : '4.5px',
+                    transform: 'translateY(-50%)',
+                    boxShadow: showMoons 
+                      ? '0 0 10px rgba(0, 255, 255, 0.6)' 
+                      : 'none'
+                  }}
+                ></div>
               </div>
-              <div className="text-[10px] text-white/80 mt-1 font-medium">MOONS</div>
+              <div className="text-[10px] text-white/80 mt-1 font-light">MOONS</div>
             </div>
             
             <div className="flex flex-col items-center">
@@ -2138,55 +2610,106 @@ function SolarSystemEnhanced() {
                   setShowAsteroidBelt(!showAsteroidBelt)
                   setShowKuiperBelt(!showKuiperBelt)
                 }}
-                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-200 relative ${
+                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showAsteroidBelt 
-                    ? 'bg-blue-500/20 border-blue-400/50' 
-                    : 'bg-gray-700/50 border-gray-600'
+                    ? 'bg-gray-800/40 border-cyan-400/60' 
+                    : 'bg-gray-900/60 border-gray-700/40'
                 }`}
+                style={{
+                  boxShadow: showAsteroidBelt 
+                    ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
+                    : 'none'
+                }}
               >
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-200 ${
-                  showAsteroidBelt 
-                    ? 'left-6 bg-blue-400' 
-                    : 'left-0.5 bg-gray-500'
-                }`}></div>
+                <div 
+                  className={`absolute rounded-full transition-all duration-300 ${
+                    showAsteroidBelt 
+                      ? 'bg-cyan-400' 
+                      : 'bg-gray-500'
+                  }`}
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    top: '50%',
+                    left: showAsteroidBelt ? '28.5px' : '4.5px',
+                    transform: 'translateY(-50%)',
+                    boxShadow: showAsteroidBelt 
+                      ? '0 0 10px rgba(0, 255, 255, 0.6)' 
+                      : 'none'
+                  }}
+                ></div>
               </div>
-              <div className="text-[10px] text-white/80 mt-1 font-medium">ASTEROIDS</div>
+              <div className="text-[10px] text-white/80 mt-1 font-light">ASTEROIDS</div>
             </div>
             
             <div className="flex flex-col items-center">
               <div 
                 onClick={() => setShowStars(!showStars)}
-                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-200 relative ${
+                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showStars 
-                    ? 'bg-blue-500/20 border-blue-400/50' 
-                    : 'bg-gray-700/50 border-gray-600'
+                    ? 'bg-gray-800/40 border-cyan-400/60' 
+                    : 'bg-gray-900/60 border-gray-700/40'
                 }`}
+                style={{
+                  boxShadow: showStars 
+                    ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
+                    : 'none'
+                }}
               >
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-200 ${
-                  showStars 
-                    ? 'left-6 bg-blue-400' 
-                    : 'left-0.5 bg-gray-500'
-                }`}></div>
+                <div 
+                  className={`absolute rounded-full transition-all duration-300 ${
+                    showStars 
+                      ? 'bg-cyan-400' 
+                      : 'bg-gray-500'
+                  }`}
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    top: '50%',
+                    left: showStars ? '28.5px' : '4.5px',
+                    transform: 'translateY(-50%)',
+                    boxShadow: showStars 
+                      ? '0 0 10px rgba(0, 255, 255, 0.6)' 
+                      : 'none'
+                  }}
+                ></div>
               </div>
-              <div className="text-[10px] text-white/80 mt-1 font-medium">STAR FIELD</div>
+              <div className="text-[10px] text-white/80 mt-1 font-light">STAR FIELD</div>
             </div>
             
             <div className="flex flex-col items-center">
               <div 
                 onClick={() => setMilkyWayBrightness(milkyWayBrightness === 0 ? 0.1 : 0)}
-                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-200 relative ${
+                className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   milkyWayBrightness > 0 
-                    ? 'bg-blue-500/20 border-blue-400/50' 
-                    : 'bg-gray-700/50 border-gray-600'
+                    ? 'bg-gray-800/40 border-cyan-400/60' 
+                    : 'bg-gray-900/60 border-gray-700/40'
                 }`}
+                style={{
+                  boxShadow: milkyWayBrightness > 0 
+                    ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
+                    : 'none'
+                }}
               >
-                <div className={`absolute top-0.5 w-5 h-5 rounded-full transition-all duration-200 ${
-                  milkyWayBrightness > 0 
-                    ? 'left-6 bg-blue-400' 
-                    : 'left-0.5 bg-gray-500'
-                }`}></div>
+                <div 
+                  className={`absolute rounded-full transition-all duration-300 ${
+                    milkyWayBrightness > 0 
+                      ? 'bg-cyan-400' 
+                      : 'bg-gray-500'
+                  }`}
+                  style={{
+                    width: '15px',
+                    height: '15px',
+                    top: '50%',
+                    left: milkyWayBrightness > 0 ? '28.5px' : '4.5px',
+                    transform: 'translateY(-50%)',
+                    boxShadow: milkyWayBrightness > 0 
+                      ? '0 0 10px rgba(0, 255, 255, 0.6)' 
+                      : 'none'
+                  }}
+                ></div>
               </div>
-              <div className="text-[10px] text-white/80 mt-1 font-medium">GALAXY</div>
+              <div className="text-[10px] text-white/80 mt-1 font-light">GALAXY</div>
             </div>
           </div>
         </div>
@@ -2200,24 +2723,112 @@ function SolarSystemEnhanced() {
             </div>
           </div>
           
-          {/* Slider with Labels */}
-          <div className="space-y-3">
+          {/* Futuristic Slider */}
+          <div className="relative w-full mb-4 pb-2">
+            {/* Track */}
+            <div className="relative h-1 rounded-sm" style={{
+              background: 'linear-gradient(to right, transparent, rgba(0, 200, 255, 0.3))'
+            }}>
+              {/* Active/Filled Track */}
+              <div 
+                className="absolute h-1 rounded-sm"
+                style={{
+                  width: `${milkyWayBrightness * 100}%`,
+                  background: '#00ffff',
+                  boxShadow: '0 0 10px rgba(0, 255, 255, 0.6)'
+                }}
+              ></div>
+            </div>
+            
             <input
               type="range"
               min="0"
-              max="0.8"
+              max="1.0"
               step="0.05"
               value={milkyWayBrightness}
               onChange={(e) => setMilkyWayBrightness(Number(e.target.value))}
-              className="w-full accent-cyan-400"
+              className="absolute w-full appearance-none bg-transparent cursor-pointer slider-futuristic"
+              style={{ top: '-15px', height: '32px' }}
             />
             
-            {/* Range Labels */}
-            <div className="flex justify-between text-xs text-gray-400">
-              <span>OFF</span>
-              <span>DIM</span>
-              <span>BRIGHT</span>
+            {/* Scale markers and labels */}
+            <div className="relative mt-2" style={{ marginBottom: '10px' }}>
+              {/* Minor ticks (smaller, dimmer) */}
+              {[2.5, 5, 7.5, 10, 12.5, 15, 17.5, 20, 22.5, 27.5, 30, 32.5, 35, 37.5, 40, 42.5, 45, 47.5, 52.5, 55, 57.5, 60, 62.5, 65, 67.5, 70, 72.5, 77.5, 80, 82.5, 85, 87.5, 90, 92.5, 95, 97.5].map(position => (
+                <div 
+                  key={`minor-${position}`}
+                  className="absolute"
+                  style={{ 
+                    left: `${position}%`, 
+                    transform: 'translateX(-50%)'
+                  }}
+                >
+                  <div className="flex flex-col items-center">
+                    <div style={{ 
+                      width: '0.5px', 
+                      height: '3px',
+                      backgroundColor: 'rgba(100, 200, 255, 0.25)',
+                      marginBottom: '0.5px'
+                    }}></div>
+                  </div>
+                </div>
+              ))}
+              
+              {/* Major ticks (with numbers) */}
+              {[
+                { value: '0', position: 0 },
+                { value: '25', position: 25 },
+                { value: '50', position: 50 },
+                { value: '75', position: 75 },
+                { value: '100', position: 100 }
+              ].map(({ value, position }) => (
+                <div 
+                  key={value} 
+                  className="absolute"
+                  style={{ 
+                    left: `${position}%`, 
+                    transform: value === '0' ? 'translateX(0%)' : value === '100' ? 'translateX(-100%)' : 'translateX(-50%)'
+                  }}
+                >
+                  <div className="flex flex-col" style={{ alignItems: value === '0' ? 'flex-start' : value === '100' ? 'flex-end' : 'center' }}>
+                    <div className="w-px mb-0.5" style={{ backgroundColor: 'rgba(100, 200, 255, 0.5)', height: '6px' }}></div>
+                    <span 
+                      className="text-[9px] font-thin font-mono" 
+                      style={{ color: '#00ffff' }}
+                    >
+                      {value}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
+            
+            <style jsx>{`
+              .slider-futuristic::-webkit-slider-thumb {
+                appearance: none;
+                width: 8px;
+                height: 19px;
+                border-radius: 4px;
+                background: linear-gradient(135deg, #00ffff, #0099ff);
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                cursor: pointer;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+                transition: all 0.2s ease;
+              }
+              .slider-futuristic::-webkit-slider-thumb:hover {
+                box-shadow: 0 0 30px rgba(0, 255, 255, 1);
+              }
+              .slider-futuristic::-moz-range-thumb {
+                width: 8px;
+                height: 19px;
+                border-radius: 4px;
+                background: linear-gradient(135deg, #00ffff, #0099ff);
+                border: 1px solid rgba(255, 255, 255, 0.9);
+                cursor: pointer;
+                box-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+                border: none;
+              }
+            `}</style>
           </div>
         </div>
           </>
@@ -2262,6 +2873,9 @@ function SolarSystemEnhanced() {
           setCameraFrozen={setCameraFrozen}
           frozenCameraPosition={frozenCameraPosition}
           setFrozenCameraPosition={setFrozenCameraPosition}
+          onMilkyWayEasterEggTrigger={handleMilkyWayEasterEggTrigger}
+          milkyWayEasterEggActive={milkyWayEasterEggActive}
+          milkyWayEasterEggCooldown={milkyWayEasterEggCooldown}
         />
         
         {/* Enhanced Lighting */}
@@ -2346,6 +2960,13 @@ function SolarSystemEnhanced() {
         isActive={easterEggActive}
         onComplete={handleEasterEggComplete}
         sunColor="#E8C543"
+      />
+      
+      {/* Milky Way Easter Egg Overlay */}
+      {console.log('🌌 RENDERING CHECK - milkyWayEasterEggActive:', milkyWayEasterEggActive)}
+      <MilkyWayEasterEgg
+        isActive={milkyWayEasterEggActive}
+        onComplete={handleMilkyWayEasterEggComplete}
       />
       
     </div>

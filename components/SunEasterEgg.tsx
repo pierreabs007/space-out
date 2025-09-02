@@ -144,11 +144,15 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           setStartAnimation(true)
         }, 2000)
         
-        // Animation completes after 7 seconds
+        // Animation completes after 9 seconds (2s delay + 7s animation)
         setTimeout(() => {
-          console.log('🚨 Animation complete - calling onComplete()')
+          console.log('🚨🚨🚨 ANIMATION COMPLETE TIMEOUT FIRED!')
+          
+          // IMMEDIATELY call onComplete - no complex state clearing
+          console.log('🚨 Calling onComplete() RIGHT NOW')
           onComplete()
-        }, 7000) // 7s animation only
+          console.log('🚨 onComplete() finished - checking if Easter egg is gone...')
+        }, 9000) // 9s total animation (includes 2s hold + 7s movement)
       }
       
       startAnimation()
@@ -194,7 +198,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         
         @keyframes slow-counterclockwise-spin {
           0% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
-          1% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
+          22% { transform: translateX(-50px) translateY(-50%) scale(0.28) rotate(0deg); }
           100% { transform: translateX(calc(100vw + 400px)) translateY(-50%) scale(0.28) rotate(-180deg); }
         }
         
