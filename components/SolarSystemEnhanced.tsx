@@ -1262,7 +1262,7 @@ const planetData = [
     speed: 0.00415, // 4.15x faster than Earth (88 day orbit vs 365 days)
     startAngle: 0,
     inclination: 0.2, // Minimal inclination to stay in orbital plane
-    eccentricity: 0.02, // Minimal eccentricity 
+    eccentricity: 0.01, // Minimal eccentricity 
     axialTilt: 0.034 * Math.PI / 180
   },
   { 
@@ -1298,7 +1298,7 @@ const planetData = [
     speed: 0.00053, // 0.53x Earth's speed (687 day orbit vs 365 days)
     startAngle: 5.8,
     inclination: 0.2, // Minimal inclination to stay in orbital plane
-    eccentricity: 0.05,
+    eccentricity: 0.01,
     axialTilt: 25.2 * Math.PI / 180,
     moons: [
       { distance: 1.5, radius: 0.05, color: '#999999', speed: 0.016, startAngle: 0 },
@@ -1313,7 +1313,7 @@ const planetData = [
     speed: 0.000083, // 0.083x Earth's speed (12 year orbit vs 1 year)
     startAngle: 0.9,
     inclination: 0.1, // Minimal inclination to stay in orbital plane
-    eccentricity: 0.02,
+    eccentricity: 0.01,
     axialTilt: 3.1 * Math.PI / 180,
     moons: [
       { distance: 4, radius: 0.2, color: '#FFFF99', speed: 0.009, startAngle: 0 },
@@ -1330,7 +1330,7 @@ const planetData = [
     speed: 0.000034, // 0.034x Earth's speed (29 year orbit vs 1 year)
     startAngle: 4.2,
     inclination: 0.1, // Minimal inclination to stay in orbital plane
-    eccentricity: 0.03,
+    eccentricity: 0.01,
     axialTilt: 26.7 * Math.PI / 180,
     moons: [
       { distance: 5, radius: 0.25, color: '#FFCC99', speed: 0.004, startAngle: 2.1 },      // Titan
@@ -1350,7 +1350,7 @@ const planetData = [
     speed: 0.000012, // 0.012x Earth's speed (84 year orbit vs 1 year)
     startAngle: 2.7,
     inclination: 0.1, // Minimal inclination to stay in orbital plane
-    eccentricity: 0.02,
+    eccentricity: 0.01,
     axialTilt: 97.8 * Math.PI / 180 // Extreme tilt
   },
   { 
