@@ -1218,6 +1218,7 @@ function OrbitRing({
           color={hovered ? "#666666" : "#444444"} 
           transparent 
           opacity={hovered ? 0.8 : 0.5}
+          side={DoubleSide}
         />
       </mesh>
       
