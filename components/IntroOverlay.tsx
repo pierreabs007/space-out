@@ -65,7 +65,7 @@ export default function IntroOverlay({ isVisible, onClose }: IntroOverlayProps) 
       <div 
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
         style={{ 
-          backgroundColor: 'rgba(0, 0, 0, 0.425)',
+          backgroundColor: 'rgba(0, 0, 0, 0.2125)',
           backdropFilter: 'blur(8px)',
           opacity: isClosing ? 0 : 1,
           transition: 'opacity 0.3s ease-out'

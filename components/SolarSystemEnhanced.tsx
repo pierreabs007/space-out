@@ -530,17 +530,6 @@ function AsteroidBelt({
       {/* Invisible wide hover area - same thickness as orbit paths */}
       <mesh 
         rotation={[-Math.PI / 2, 0, 0]}
-        onPointerEnter={(e) => {
-          e.stopPropagation()
-          if (onHover) {
-            onHover(celestialInfo["Asteroid Belt"])
-          }
-        }}
-        onPointerLeave={() => {
-          if (onUnhover) {
-            onUnhover()
-          }
-        }}
       >
         <ringGeometry args={[48, 72, 64]} />
         <meshBasicMaterial 
@@ -1219,12 +1208,14 @@ function OrbitRing({
   distance, 
   planetName,
   onHover,
-  onUnhover 
+  onUnhover,
+  orbitOpacity = 0.5 
 }: { 
   distance: number,
   planetName?: string,
   onHover?: (info: any) => void,
-  onUnhover?: () => void
+  onUnhover?: () => void,
+  orbitOpacity?: number
 }) {
   const [hovered, setHovered] = useState(false)
 
@@ -1236,7 +1227,7 @@ function OrbitRing({
         <meshBasicMaterial 
           color={hovered ? "#666666" : "#444444"} 
           transparent 
-          opacity={hovered ? 0.8 : 0.5}
+          opacity={hovered ? Math.min(orbitOpacity + 0.3, 1) : orbitOpacity}
           side={DoubleSide}
         />
       </mesh>
@@ -1677,6 +1668,7 @@ function SolarSystemEnhanced() {
   const [timeScale, setTimeScale] = useState(100)
   const [showSun, setShowSun] = useState(true)
   const [showOrbits, setShowOrbits] = useState(true)
+  const [orbitOpacity, setOrbitOpacity] = useState(0.5) // Default 50% opacity
   const [showMoons, setShowMoons] = useState(true)
   const [showAsteroidBelt, setShowAsteroidBelt] = useState(true)
   const [showStars, setShowStars] = useState(true)
@@ -1703,13 +1695,7 @@ function SolarSystemEnhanced() {
     return true
   })
   
-  // UI suppression state - hide UI for 2 seconds after intro overlay closes
-  const [uiSuppressed, setUiSuppressed] = useState(false)
   
-  // Mouse movement duration tracking - show Mission Control only for movements ≥ 0.2s
-  const [mouseMovementStartTime, setMouseMovementStartTime] = useState<number | null>(null)
-  const [isMouseMoving, setIsMouseMoving] = useState(false)
-  const [mouseStopTimer, setMouseStopTimer] = useState<NodeJS.Timeout | null>(null)
   
 
   
@@ -1884,7 +1870,7 @@ function SolarSystemEnhanced() {
       // Arrow keys and Z/X keys - switch to Manual Mode in Automatic Mode
       const isControlKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x'].includes(event.key.toLowerCase())
       
-      if (isControlKey && cameraAnimation && !uiSuppressed) {
+      if (isControlKey && cameraAnimation) {
         // If in Automatic Mode, switch to Manual Mode when any control key is pressed
         console.log('🎮 Control key pressed in Auto mode - switching to Manual')
         setCameraAnimation(false)
@@ -1919,38 +1905,11 @@ function SolarSystemEnhanced() {
   const handleMouseMove = (e: React.MouseEvent) => {
     if (easterEggActive) return
     setMousePosition({ x: e.clientX, y: e.clientY })
-    const currentTime = Date.now()
-    setLastMouseMove(currentTime)
-    
-    // Clear existing stop timer since mouse is moving
-    if (mouseStopTimer) {
-      clearTimeout(mouseStopTimer)
-    }
-    
-    // If not currently moving, start tracking movement
-    if (!isMouseMoving) {
-      setIsMouseMoving(true)
-      setMouseMovementStartTime(currentTime)
-    }
-    
-    // Check if we've been moving long enough (0.2s) and should show controls
-    if (mouseMovementStartTime && (currentTime - mouseMovementStartTime >= 200)) {
-      if (!controlsVisible && !controlsPinned && !uiSuppressed) {
-        setControlsVisible(true)
-      }
-    }
-    
-    // Set a timer to detect when mouse stops moving
-    const stopTimer = setTimeout(() => {
-      setIsMouseMoving(false)
-      setMouseMovementStartTime(null)
-    }, 50) // Consider mouse stopped if no movement for 50ms
-    
-    setMouseStopTimer(stopTimer)
+    setLastMouseMove(Date.now())
   }
 
   const handleMouseInteraction = (interactionType: string) => {
-    if (easterEggActive || uiSuppressed) return
+    if (easterEggActive) return
     if (cameraAnimation) {
       console.log(`🎮 ${interactionType} in Auto mode - switching to Manual`)
       setCameraAnimation(false)
@@ -1962,26 +1921,10 @@ function SolarSystemEnhanced() {
     const interval = setInterval(() => {
       if (Date.now() - lastMouseMove > 500 && !controlsPinned && !controlsHovered) {
         setControlsVisible(false)
-        // Reset mouse movement tracking when hiding controls
-        setIsMouseMoving(false)
-        setMouseMovementStartTime(null)
-        if (mouseStopTimer) {
-          clearTimeout(mouseStopTimer)
-          setMouseStopTimer(null)
-        }
       }
     }, 250)
     return () => clearInterval(interval)
-  }, [lastMouseMove, controlsPinned, controlsHovered, mouseStopTimer])
-  
-  // Cleanup timer on unmount
-  React.useEffect(() => {
-    return () => {
-      if (mouseStopTimer) {
-        clearTimeout(mouseStopTimer)
-      }
-    }
-  }, [mouseStopTimer])
+  }, [lastMouseMove, controlsPinned, controlsHovered])
 
   return (
     <div 
@@ -1997,7 +1940,7 @@ function SolarSystemEnhanced() {
     >
       {/* Control Panel */}
       <div 
-        className={`absolute top-4 left-4 z-10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl space-y-3 max-w-xs shadow-2xl transition-opacity duration-500 ${((controlsVisible || controlsPinned) && !uiSuppressed) ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute top-4 left-4 z-10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl space-y-3 max-w-xs shadow-2xl transition-opacity duration-500 ${(controlsVisible || controlsPinned) ? 'opacity-100' : 'opacity-0'}`}
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
         onMouseEnter={() => { setControlsHovered(true); setControlsVisible(true) }}
         onMouseLeave={() => setControlsHovered(false)}
@@ -2026,6 +1969,7 @@ function SolarSystemEnhanced() {
                 setCameraVerticalMax(60)
                 setShowSun(true)
                 setShowOrbits(true)
+                setOrbitOpacity(0.5)
                 setShowMoons(true)
                 setShowAsteroidBelt(true)
                 setShowStars(true)
@@ -2340,7 +2284,7 @@ function SolarSystemEnhanced() {
             <div className="grid grid-cols-2 gap-2" style={{ marginTop: '22px' }}>
               <button
                 onClick={() => setCameraAnimation(false)}
-                className={`px-2 py-1 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
+                className={`px-2 py-0.5 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                   !cameraAnimation 
                     ? 'bg-red-500/20 border-red-400/50 text-red-300' 
                     : 'bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600/50'
@@ -2350,7 +2294,7 @@ function SolarSystemEnhanced() {
               </button>
               <button
                 onClick={() => setCameraAnimation(true)}
-                className={`px-2 py-1 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
+                className={`px-2 py-0.5 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                   cameraAnimation 
                     ? 'bg-blue-500/20 border-blue-400/50 text-blue-300' 
                     : 'bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600/50'
@@ -2700,6 +2644,12 @@ function SolarSystemEnhanced() {
             <div className="flex flex-col items-center">
               <div 
                 onClick={() => setShowSun(!showSun)}
+                onMouseEnter={() => {
+                  setHoveredObject(celestialInfo["Sun"])
+                }}
+                onMouseLeave={() => {
+                  setHoveredObject(null)
+                }}
                 className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showSun 
                     ? 'bg-gray-800/40 border-cyan-400/60' 
@@ -2843,6 +2793,12 @@ function SolarSystemEnhanced() {
                   setShowAsteroidBelt(!showAsteroidBelt)
                   setShowKuiperBelt(!showKuiperBelt)
                 }}
+                onMouseEnter={() => {
+                  setHoveredObject(celestialInfo["Asteroid Belt"])
+                }}
+                onMouseLeave={() => {
+                  setHoveredObject(null)
+                }}
                 className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showAsteroidBelt 
                     ? 'bg-gray-800/40 border-cyan-400/60' 
@@ -2912,8 +2868,108 @@ function SolarSystemEnhanced() {
           </div>
         </div>
 
-        {/* NASA-Style Background Intensity Control */}
-        <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
+        {/* Side-by-side controls: ORBIT VISIBILITY and GALAXY LUMINOSITY */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* NASA-Style Orbit Visibility Control */}
+          <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
+            <div className="flex items-center justify-between mb-3">
+              <div className="text-[10px] font-semibold text-gray-300 tracking-wider">ORBIT VISIBILITY</div>
+              <div className="px-1 py-0.5 bg-green-500/20 border border-green-400/40 rounded text-[7px] text-green-300 font-medium">
+                {showOrbits ? (orbitOpacity * 100).toFixed(0) : '0'}%
+              </div>
+            </div>
+            
+            {/* Futuristic Slider */}
+            <div className="relative w-full mb-4 pb-2">
+              {/* Track */}
+              <div className="relative h-1 rounded-sm" style={{
+                background: 'linear-gradient(to right, transparent, rgba(0, 200, 255, 0.3))'
+              }}>
+                {/* Active/Filled Track */}
+                <div 
+                  className="absolute h-1 rounded-sm"
+                  style={{
+                    width: `${showOrbits ? orbitOpacity * 100 : 0}%`,
+                    background: '#00ffff',
+                    boxShadow: '0 0 8px rgba(0, 255, 255, 0.7)'
+                  }}
+                />
+                
+                {/* Slider Handle */}
+                <div 
+                  className="absolute w-3 h-3 -top-1 rounded-full cursor-pointer transition-all duration-200"
+                  style={{
+                    left: `calc(${showOrbits ? orbitOpacity * 100 : 0}% - 0.375rem)`,
+                    background: 'radial-gradient(circle, #00ffff, #0080ff)',
+                    boxShadow: '0 0 12px rgba(0, 255, 255, 0.8)',
+                    border: '1px solid rgba(0, 255, 255, 0.6)'
+                  }}
+                />
+                
+                {/* Interactive Area */}
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={showOrbits ? orbitOpacity : 0}
+                  onChange={(e) => {
+                    const newOpacity = parseFloat(e.target.value)
+                    setOrbitOpacity(newOpacity)
+                    // Auto-enable orbits if opacity > 0
+                    if (newOpacity > 0 && !showOrbits) {
+                      setShowOrbits(true)
+                    }
+                    // Auto-disable orbits if opacity = 0
+                    if (newOpacity === 0) {
+                      setShowOrbits(false)
+                    }
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  onMouseDown={(e) => e.stopPropagation()}
+                />
+                
+                {/* Scientific Tick Marks */}
+                {Array.from({ length: 37 }, (_, i) => {
+                  const position = (i / 36) * 100
+                  const isMajor = i % 6 === 0
+                  return (
+                    <div
+                      key={i}
+                      className="absolute"
+                      style={{
+                        left: `${position}%`,
+                        bottom: '-8px',
+                        width: isMajor ? '1px' : '0.5px',
+                        height: isMajor ? '6px' : '3px',
+                        background: 'rgba(255, 255, 255, 0.3)',
+                        transform: 'translateX(-50%)'
+                      }}
+                    />
+                  )
+                })}
+                
+                {/* Percentage Labels */}
+                {[0, 25, 50, 75, 100].map((percent) => (
+                  <div
+                    key={percent}
+                    className="absolute text-[8px] text-gray-400 font-medium"
+                    style={{
+                      left: `${percent}%`,
+                      bottom: '-20px',
+                      transform: 'translateX(-50%)',
+                      textAlign: 'center'
+                    }}
+                  >
+                    {percent}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* NASA-Style Background Intensity Control */}
+          <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <div className="text-[10px] font-semibold text-gray-300 tracking-wider">GALAXY LUMINOSITY</div>
             <div className="px-1 py-0.5 bg-green-500/20 border border-green-400/40 rounded text-[7px] text-green-300 font-medium">
@@ -3029,6 +3085,7 @@ function SolarSystemEnhanced() {
             `}</style>
           </div>
         </div>
+        </div>
           </>
         )}
 
@@ -3104,6 +3161,7 @@ function SolarSystemEnhanced() {
               planetName={planet.name}
               onHover={handleObjectHover}
               onUnhover={handleObjectUnhover}
+              orbitOpacity={orbitOpacity}
             />
           ))}
           
@@ -3178,11 +3236,6 @@ function SolarSystemEnhanced() {
           setShowIntroOverlay(false)
           // Ensure camera starts in automatic mode
           setCameraAnimation(true)
-          // Start UI suppression for 2 seconds
-          setUiSuppressed(true)
-          setTimeout(() => {
-            setUiSuppressed(false)
-          }, 2000)
         }}
       />
       
