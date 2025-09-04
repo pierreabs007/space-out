@@ -1,8 +1,14 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Bebas_Neue } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
+const bebasNeue = Bebas_Neue({ 
+  weight: '400',
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-bebas-neue'
+})
 
 export const metadata: Metadata = {
   title: 'Solar System Viewer',
@@ -21,7 +27,16 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <head>
+        <link 
+          rel="preload" 
+          href="/fonts/Oups_Clean.otf" 
+          as="font" 
+          type="font/otf" 
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className={`${inter.className} ${bebasNeue.variable}`}>{children}</body>
     </html>
   )
 }

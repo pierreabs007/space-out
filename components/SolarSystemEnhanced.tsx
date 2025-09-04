@@ -7,6 +7,7 @@ import { Mesh, Group, InstancedMesh, Object3D, Vector2, Raycaster, Vector3, Canv
 import { RotateCcw, EyeOff, Eye, Maximize, Info, ArrowLeft } from 'lucide-react'
 import SunEasterEgg from './SunEasterEgg'
 import MilkyWayEasterEgg from './MilkyWayEasterEgg'
+import IntroOverlay from './IntroOverlay'
 
 // Video Cache Context for preloading celestial body videos
 interface VideoCache {
@@ -564,17 +565,25 @@ function Sun({ onHover, onUnhover }: { onHover: (info: any) => void, onUnhover: 
   })
 
   return (
-    <mesh 
-      ref={meshRef}
-      onPointerEnter={(e) => {
-        e.stopPropagation()
-        onHover(celestialInfo.Sun)
-      }}
-      onPointerLeave={() => onUnhover()}
-    >
-      <sphereGeometry args={[4, 32, 32]} />
-      <meshBasicMaterial color="#FDB813" />
-    </mesh>
+    <group>
+      {/* Visible Sun */}
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[4, 32, 32]} />
+        <meshBasicMaterial color="#FDB813" />
+      </mesh>
+      
+      {/* Invisible hover zone - larger area */}
+      <mesh 
+        onPointerEnter={(e) => {
+          e.stopPropagation()
+          onHover(celestialInfo.Sun)
+        }}
+        onPointerLeave={() => onUnhover()}
+      >
+        <sphereGeometry args={[7, 8, 8]} />
+        <meshBasicMaterial transparent opacity={0} />
+      </mesh>
+    </group>
   )
 }
 
@@ -705,15 +714,7 @@ function EnhancedEarth({
     <group ref={groupRef}>
       <group position={[distance, 0, 0]}>
         {/* Earth Surface - Procedural realistic texture */}
-        <mesh
-          ref={earthRef}
-          onPointerEnter={(e) => {
-            e.stopPropagation()
-            const info = celestialInfo[name as keyof typeof celestialInfo]
-            if (info) onHover(info)
-          }}
-          onPointerLeave={() => onUnhover()}
-        >
+        <mesh ref={earthRef}>
           <sphereGeometry args={[radius, 32, 32]} />
           <meshStandardMaterial
             roughness={0.1}
@@ -985,6 +986,19 @@ function EnhancedEarth({
           </meshStandardMaterial>
         </mesh>
         
+        {/* Invisible hover zone - larger area */}
+        <mesh
+          onPointerEnter={(e) => {
+            e.stopPropagation()
+            const info = celestialInfo[name as keyof typeof celestialInfo]
+            if (info) onHover(info)
+          }}
+          onPointerLeave={() => onUnhover()}
+        >
+          <sphereGeometry args={[radius + 2.4, 8, 8]} />
+          <meshBasicMaterial transparent opacity={0} />
+        </mesh>
+        
         {/* Clouds Layer */}
         <mesh ref={cloudsRef}>
           <sphereGeometry args={[radius * 1.01, 32, 32]} />
@@ -1159,7 +1173,16 @@ function Planet({
   return (
     <group ref={groupRef} rotation={[inclination * Math.PI / 180, 0, 0]}>
       <group ref={planetGroupRef}>
-        {/* Planet */}
+        {/* Visible Planet */}
+        <mesh rotation={[0, 0, axialTilt]}>
+          <sphereGeometry args={[radius, 32, 32]} />
+          <meshBasicMaterial 
+            map={name === 'Jupiter' ? jupiterTexture : undefined}
+            color={name === 'Jupiter' && jupiterTexture ? '#ffffff' : (name === 'Jupiter' ? '#ff0000' : color)} 
+          />
+        </mesh>
+        
+        {/* Invisible hover zone - larger area */}
         <mesh
           onPointerEnter={(e) => {
             e.stopPropagation()
@@ -1167,13 +1190,9 @@ function Planet({
             if (info) onHover(info)
           }}
           onPointerLeave={() => onUnhover()}
-          rotation={[0, 0, axialTilt]}
         >
-          <sphereGeometry args={[radius, 32, 32]} />
-          <meshBasicMaterial 
-            map={name === 'Jupiter' ? jupiterTexture : undefined}
-            color={name === 'Jupiter' && jupiterTexture ? '#ffffff' : (name === 'Jupiter' ? '#ff0000' : color)} 
-          />
+          <sphereGeometry args={[radius + 2.4, 8, 8]} />
+          <meshBasicMaterial transparent opacity={0} />
         </mesh>
         
         {/* Moons */}
@@ -1226,19 +1245,11 @@ function OrbitRing({
       <mesh 
         onPointerEnter={(e) => {
           setHovered(true)
-          if (planetName && onHover) {
-            e.stopPropagation()
-            const planetInfo = celestialInfo[planetName as keyof typeof celestialInfo]
-            if (planetInfo) {
-              onHover(planetInfo)
-            }
-          }
+          // Visual effect only - no tooltip
         }}
         onPointerLeave={() => {
           setHovered(false)
-          if (onUnhover) {
-            onUnhover()
-          }
+          // Visual effect only - no tooltip
         }}
       >
         <ringGeometry args={[distance - 2, distance + 2, 64]} />
@@ -1624,7 +1635,7 @@ function CameraSystem({
     // Easter egg detection: Sun completely fills screen at closer distance
     // With sun radius=4 and FOV=60°, for 100% screen fill we need distance ≈ 5
     const optimalDistance = 5 // Distance where sun fills 100% of screen
-    console.log('🔍 Distance to sun:', distanceToSun.toFixed(2))
+
     
     if (distanceToSun <= optimalDistance) {
       if (!easterEggDelayTimer && !easterEggActive && !easterEggCooldown && !cameraFrozen) {
@@ -1655,9 +1666,12 @@ function CameraSystem({
       enableDamping={true}
       dampingFactor={0.05}
       target={[0, 0, 0]}
+      makeDefault={false}
     />
   )
 }
+
+
 
 function SolarSystemEnhanced() {
   const [timeScale, setTimeScale] = useState(100)
@@ -1679,6 +1693,27 @@ function SolarSystemEnhanced() {
   const [controlsPinned, setControlsPinned] = useState(false)
   const [showInstructions, setShowInstructions] = useState(false)
   const [controlsHovered, setControlsHovered] = useState(false)
+  
+  // Intro overlay state
+  const [showIntroOverlay, setShowIntroOverlay] = useState(() => {
+    // Check localStorage to see if user chose "Don't show this again"
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('spaceout-intro-hidden') !== 'true'
+    }
+    return true
+  })
+  
+  // UI suppression state - hide UI for 2 seconds after intro overlay closes
+  const [uiSuppressed, setUiSuppressed] = useState(false)
+  
+  // Mouse movement duration tracking - show Mission Control only for movements ≥ 0.2s
+  const [mouseMovementStartTime, setMouseMovementStartTime] = useState<number | null>(null)
+  const [isMouseMoving, setIsMouseMoving] = useState(false)
+  const [mouseStopTimer, setMouseStopTimer] = useState<NodeJS.Timeout | null>(null)
+  
+
+  
+
   
   // Easter egg state
   const [easterEggActive, setEasterEggActive] = useState(false)
@@ -1849,7 +1884,7 @@ function SolarSystemEnhanced() {
       // Arrow keys and Z/X keys - switch to Manual Mode in Automatic Mode
       const isControlKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x'].includes(event.key.toLowerCase())
       
-      if (isControlKey && cameraAnimation) {
+      if (isControlKey && cameraAnimation && !uiSuppressed) {
         // If in Automatic Mode, switch to Manual Mode when any control key is pressed
         console.log('🎮 Control key pressed in Auto mode - switching to Manual')
         setCameraAnimation(false)
@@ -1884,14 +1919,38 @@ function SolarSystemEnhanced() {
   const handleMouseMove = (e: React.MouseEvent) => {
     if (easterEggActive) return
     setMousePosition({ x: e.clientX, y: e.clientY })
-    setLastMouseMove(Date.now())
-    if (!controlsVisible && !controlsPinned) {
-      setControlsVisible(true)
+    const currentTime = Date.now()
+    setLastMouseMove(currentTime)
+    
+    // Clear existing stop timer since mouse is moving
+    if (mouseStopTimer) {
+      clearTimeout(mouseStopTimer)
     }
+    
+    // If not currently moving, start tracking movement
+    if (!isMouseMoving) {
+      setIsMouseMoving(true)
+      setMouseMovementStartTime(currentTime)
+    }
+    
+    // Check if we've been moving long enough (0.2s) and should show controls
+    if (mouseMovementStartTime && (currentTime - mouseMovementStartTime >= 200)) {
+      if (!controlsVisible && !controlsPinned && !uiSuppressed) {
+        setControlsVisible(true)
+      }
+    }
+    
+    // Set a timer to detect when mouse stops moving
+    const stopTimer = setTimeout(() => {
+      setIsMouseMoving(false)
+      setMouseMovementStartTime(null)
+    }, 50) // Consider mouse stopped if no movement for 50ms
+    
+    setMouseStopTimer(stopTimer)
   }
 
   const handleMouseInteraction = (interactionType: string) => {
-    if (easterEggActive) return
+    if (easterEggActive || uiSuppressed) return
     if (cameraAnimation) {
       console.log(`🎮 ${interactionType} in Auto mode - switching to Manual`)
       setCameraAnimation(false)
@@ -1903,10 +1962,26 @@ function SolarSystemEnhanced() {
     const interval = setInterval(() => {
       if (Date.now() - lastMouseMove > 500 && !controlsPinned && !controlsHovered) {
         setControlsVisible(false)
+        // Reset mouse movement tracking when hiding controls
+        setIsMouseMoving(false)
+        setMouseMovementStartTime(null)
+        if (mouseStopTimer) {
+          clearTimeout(mouseStopTimer)
+          setMouseStopTimer(null)
+        }
       }
     }, 250)
     return () => clearInterval(interval)
-  }, [lastMouseMove, controlsPinned, controlsHovered])
+  }, [lastMouseMove, controlsPinned, controlsHovered, mouseStopTimer])
+  
+  // Cleanup timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (mouseStopTimer) {
+        clearTimeout(mouseStopTimer)
+      }
+    }
+  }, [mouseStopTimer])
 
   return (
     <div 
@@ -1918,10 +1993,11 @@ function SolarSystemEnhanced() {
       }}
       onWheel={() => handleMouseInteraction('Mouse scroll')}
       onContextMenu={(e) => e.preventDefault()} // Prevent right-click menu
+
     >
       {/* Control Panel */}
       <div 
-        className={`absolute top-4 left-4 z-10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl space-y-3 max-w-xs shadow-2xl transition-opacity duration-500 ${(controlsVisible || controlsPinned) ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute top-4 left-4 z-10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl space-y-3 max-w-xs shadow-2xl transition-opacity duration-500 ${((controlsVisible || controlsPinned) && !uiSuppressed) ? 'opacity-100' : 'opacity-0'}`}
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
         onMouseEnter={() => { setControlsHovered(true); setControlsVisible(true) }}
         onMouseLeave={() => setControlsHovered(false)}
@@ -1997,8 +2073,45 @@ function SolarSystemEnhanced() {
 
         {showInstructions ? (
           <>
+            
             {/* NASA-Style Camera Operations Manual */}
             <div className="space-y-3 overflow-y-auto" style={{ height: '600px' }}>
+              
+              {/* App Title */}
+              <div className="text-center mb-4">
+                <div className="flex items-start justify-center" style={{ marginBottom: '5px' }}>
+                  {['S', 'P', 'A', 'C', 'E', 'O', 'U', 'T'].map((letter, index) => {
+                    // Calculate font size for each letter (half of intro overlay sizes)
+                    let fontSize;
+                    if (index <= 4) {
+                      // SPACE letters: 42px, 38px, 34px, 30px, 26px
+                      fontSize = 42 - (index * 4);
+                    } else {
+                      // OUT letters: 42px, 36px, 30px  
+                      fontSize = 42 - ((index - 5) * 6);
+                    }
+                    
+                    return (
+                      <span
+                        key={`title-${index}`}
+                        style={{
+                          fontFamily: '"Oups Clean", "Bebas Neue", cursive',
+                          fontSize: `${fontSize}px`,
+                          letterSpacing: '2px',
+                          background: 'linear-gradient(135deg, #FFB300 0%, #FDD835 50%, #FFB300 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                          display: 'inline-block',
+                          lineHeight: '0.8'
+                        }}
+                      >
+                        {letter}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
               
               {/* Camera Modes */}
               <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-4">
@@ -2108,8 +2221,8 @@ function SolarSystemEnhanced() {
             </div>
             
             {/* Large Display */}
-            <div className="bg-black/60 rounded border border-cyan-400/20 p-4 mb-3 text-center h-28 flex flex-col justify-center">
-              <div className="text-2xl font-mono text-cyan-300 font-bold tracking-wider">
+            <div className="bg-black/60 rounded border border-cyan-400/20 px-4 py-2 mb-3 text-center flex flex-col justify-center" style={{ height: '97px' }}>
+              <div className="font-mono text-cyan-300 font-bold tracking-wider" style={{ fontSize: '23px' }}>
                 {String(((cameraSpeed / 0.2) * 100).toFixed(1)).padStart(5, '0')}%
               </div>
               <div className="text-[10px] text-gray-400 mt-0.5 font-light">CAMERA VELOCITY</div>
@@ -2258,11 +2371,11 @@ function SolarSystemEnhanced() {
             </div>
             
             {/* Large Display */}
-            <div className="bg-black/60 rounded border border-cyan-400/20 p-4 mb-3 text-center h-28 flex flex-col justify-center">
-              <div className="text-xl font-mono text-cyan-300 font-bold tracking-wider">
+            <div className="bg-black/60 rounded border border-cyan-400/20 px-4 py-2 mb-3 text-center flex flex-col justify-center" style={{ height: '97px' }}>
+              <div className="font-mono text-cyan-300 font-bold tracking-wider" style={{ fontSize: '19px' }}>
                 <span className="text-xs text-cyan-300">min</span> {cameraVerticalMin}°
               </div>
-              <div className="text-xl font-mono text-cyan-300 font-bold tracking-wider" style={{ marginTop: '-0.2rem' }}>
+              <div className="font-mono text-cyan-300 font-bold tracking-wider" style={{ marginTop: '-0.2rem', fontSize: '19px' }}>
                 <span className="text-xs text-cyan-300">max</span> {cameraVerticalMax}°
               </div>
               <div className="text-[10px] text-gray-400 mt-0.5 font-light">VIEWING ANGLE RANGE</div>
@@ -2427,7 +2540,7 @@ function SolarSystemEnhanced() {
           
           {/* Large Display */}
           <div className="bg-black/60 rounded border border-cyan-400/20 p-4 mb-3 text-center h-14 flex flex-col justify-center">
-            <div className="text-2xl font-mono text-cyan-300 font-bold tracking-wider">
+            <div className="font-mono text-cyan-300 font-bold tracking-wider" style={{ fontSize: '23px' }}>
               {timeScale === 0 ? 'PAUSED' : `${String(timeScale.toFixed(0)).padStart(4, '0')}×`}
             </div>
             <div className="text-[10px] text-gray-400 mt-0.5 font-light">TIME FACTOR</div>
@@ -2963,6 +3076,8 @@ function SolarSystemEnhanced() {
           milkyWayEasterEggCooldown={milkyWayEasterEggCooldown}
         />
         
+
+        
         {/* Enhanced Lighting */}
         <ambientLight intensity={0.4} />
         <pointLight position={[0, 0, 0]} intensity={3} color="#FDB813" />
@@ -2978,6 +3093,7 @@ function SolarSystemEnhanced() {
         <group>
           
           {/* Sun at center */}
+
           {showSun && <Sun onHover={handleObjectHover} onUnhover={handleObjectUnhover} />}
           
           {/* Orbit rings */}
@@ -2992,6 +3108,7 @@ function SolarSystemEnhanced() {
           ))}
           
           {/* All planets with moons */}
+
           {showPlanets && planetData.map((planet) => (
             <Planet 
               key={planet.name}
@@ -3052,6 +3169,21 @@ function SolarSystemEnhanced() {
       <MilkyWayEasterEgg
         isActive={milkyWayEasterEggActive}
         onComplete={handleMilkyWayEasterEggComplete}
+      />
+      
+      {/* Intro Overlay */}
+      <IntroOverlay
+        isVisible={showIntroOverlay}
+        onClose={() => {
+          setShowIntroOverlay(false)
+          // Ensure camera starts in automatic mode
+          setCameraAnimation(true)
+          // Start UI suppression for 2 seconds
+          setUiSuppressed(true)
+          setTimeout(() => {
+            setUiSuppressed(false)
+          }, 2000)
+        }}
       />
       
     </div>
