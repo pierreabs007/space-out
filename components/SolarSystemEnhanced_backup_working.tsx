@@ -38,7 +38,6 @@ function VideoCacheProvider({ children }: { children: React.ReactNode }) {
     'mercury',     // Inner planet  
     'neptune',     // Outer planet
     'uranus',      // Outer planet
-    'pluto',       // Popular dwarf planet (astronomy enthusiasts)
     'asteroid_belt', // Interesting feature
     'kuiper_belt'  // Distant feature
   ]
@@ -213,11 +212,6 @@ const celestialInfo = {
     type: "Ice giant",
     description: "The windiest planet in the solar system, Neptune features the fastest winds recorded on any planet, with speeds reaching up to 2,100 km/h (1,300 mph) - nearly supersonic by Earth standards. This deep blue world gets its striking color from methane in its atmosphere, which absorbs red light and gives the planet its distinctive azure appearance. Like Uranus, Neptune is an ice giant composed of water, methane, and ammonia ices surrounding a rocky core about the size of Earth. The planet takes 165 Earth years to complete one orbit around the Sun, meaning it has only completed one full orbit since its discovery in 1846. Neptune has 16 known moons, with Triton being by far the largest and most interesting - it's the only large moon in the solar system with a retrograde orbit, suggesting it's a captured Kuiper Belt object. Neptune has a faint ring system with five named rings. The planet radiates 2.6 times more energy than it receives from the Sun, indicating significant internal heat generation. Despite being 30 times farther from the Sun than Earth, Neptune's dynamic atmosphere shows active weather patterns including storm systems like the Great Dark Spot, comparable in size to Jupiter's Great Red Spot."
   },
-  Pluto: {
-    name: "Pluto",
-    type: "Dwarf planet",
-    description: "Once our solar system's ninth planet, Pluto was reclassified as a dwarf planet in 2006, sparking passionate debates that continue today. This distant world, smaller than Earth's moon, boasts a surprisingly complex and dynamic surface revealed by NASA's New Horizons mission in 2015.\n\nPluto's heart-shaped region, Tombaugh Regio, captivated the world with its smooth nitrogen plains and active geology. The dwarf planet has a thin atmosphere composed mainly of nitrogen, and its largest moon Charon is so large relative to Pluto that they form a binary system, tidally locked and orbiting their mutual center.\n\nWith its highly eccentric 248-year orbit that's tilted 17° to the ecliptic plane, Pluto sometimes comes closer to the Sun than Neptune. This icy world represents the gateway to the Kuiper Belt, where countless frozen remnants from our solar system's formation await discovery.\n\nNamed after the Roman god of the underworld, Pluto continues to surprise scientists with its geological activity, including possible subsurface oceans and active weather patterns despite its incredible distance from the Sun."
-  },
   "Asteroid Belt": {
     name: "Asteroid Belt",
     type: "Asteroid region",
@@ -388,7 +382,6 @@ function CelestialBodyMedia({ celestialBody }: { celestialBody: any }) {
       'Mercury': 'mercury',
       'Uranus': 'uranus',
       'Neptune': 'neptune',
-      'Pluto': 'pluto',
       'Asteroid Belt': 'asteroid_belt',
       'Kuiper Belt': 'kuiper_belt'
     }
@@ -537,6 +530,17 @@ function AsteroidBelt({
       {/* Invisible wide hover area - same thickness as orbit paths */}
       <mesh 
         rotation={[-Math.PI / 2, 0, 0]}
+        onPointerEnter={(e) => {
+          e.stopPropagation()
+          if (onHover) {
+            onHover(celestialInfo["Asteroid Belt"])
+          }
+        }}
+        onPointerLeave={() => {
+          if (onUnhover) {
+            onUnhover()
+          }
+        }}
       >
         <ringGeometry args={[48, 72, 64]} />
         <meshBasicMaterial 
@@ -1215,14 +1219,12 @@ function OrbitRing({
   distance, 
   planetName,
   onHover,
-  onUnhover,
-  orbitOpacity = 0.5 
+  onUnhover 
 }: { 
   distance: number,
   planetName?: string,
   onHover?: (info: any) => void,
-  onUnhover?: () => void,
-  orbitOpacity?: number
+  onUnhover?: () => void
 }) {
   const [hovered, setHovered] = useState(false)
 
@@ -1234,7 +1236,7 @@ function OrbitRing({
         <meshBasicMaterial 
           color={hovered ? "#666666" : "#444444"} 
           transparent 
-          opacity={hovered ? Math.min(orbitOpacity + 0.3, 1) : orbitOpacity}
+          opacity={hovered ? 0.8 : 0.5}
           side={DoubleSide}
         />
       </mesh>
@@ -1373,20 +1375,6 @@ const planetData = [
     inclination: 0.1, // Minimal inclination to stay in orbital plane
     eccentricity: 0.01,
     axialTilt: 28.3 * Math.PI / 180
-  },
-  { 
-    name: 'Pluto', 
-    distance: 148, // 39.5 AU scaled visually (enhanced distance from Neptune's 120)
-    radius: 1.2, // Enhanced 3x for visibility (actual would be ~0.4)
-    color: '#C5A572', // Brownish-tan from New Horizons data
-    speed: 0.0000024, // 0.0024x Earth's speed (248 year orbit vs 1 year)
-    startAngle: 0.6,
-    inclination: 17.14 * Math.PI / 180, // Real 17.14° orbital inclination
-    eccentricity: 0.248, // Real high eccentricity
-    axialTilt: 122.53 * Math.PI / 180, // Extreme tilt with retrograde rotation
-    moons: [
-      { distance: 2.5, radius: 0.6, color: '#8B8680', speed: 0.00096, startAngle: 0 } // Charon - large relative to Pluto
-    ]
   },
 ]
 
@@ -1689,8 +1677,6 @@ function SolarSystemEnhanced() {
   const [timeScale, setTimeScale] = useState(100)
   const [showSun, setShowSun] = useState(true)
   const [showOrbits, setShowOrbits] = useState(true)
-  const [showPluto, setShowPluto] = useState(true)
-  const [orbitOpacity, setOrbitOpacity] = useState(0.5) // Default 50% opacity
   const [showMoons, setShowMoons] = useState(true)
   const [showAsteroidBelt, setShowAsteroidBelt] = useState(true)
   const [showStars, setShowStars] = useState(true)
@@ -1717,7 +1703,13 @@ function SolarSystemEnhanced() {
     return true
   })
   
+  // UI suppression state - hide UI for 2 seconds after intro overlay closes
+  const [uiSuppressed, setUiSuppressed] = useState(false)
   
+  // Mouse movement duration tracking - show Mission Control only for movements ≥ 0.2s
+  const [mouseMovementStartTime, setMouseMovementStartTime] = useState<number | null>(null)
+  const [isMouseMoving, setIsMouseMoving] = useState(false)
+  const [mouseStopTimer, setMouseStopTimer] = useState<NodeJS.Timeout | null>(null)
   
 
   
@@ -1892,7 +1884,7 @@ function SolarSystemEnhanced() {
       // Arrow keys and Z/X keys - switch to Manual Mode in Automatic Mode
       const isControlKey = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'z', 'x'].includes(event.key.toLowerCase())
       
-      if (isControlKey && cameraAnimation) {
+      if (isControlKey && cameraAnimation && !uiSuppressed) {
         // If in Automatic Mode, switch to Manual Mode when any control key is pressed
         console.log('🎮 Control key pressed in Auto mode - switching to Manual')
         setCameraAnimation(false)
@@ -1927,11 +1919,38 @@ function SolarSystemEnhanced() {
   const handleMouseMove = (e: React.MouseEvent) => {
     if (easterEggActive) return
     setMousePosition({ x: e.clientX, y: e.clientY })
-    setLastMouseMove(Date.now())
+    const currentTime = Date.now()
+    setLastMouseMove(currentTime)
+    
+    // Clear existing stop timer since mouse is moving
+    if (mouseStopTimer) {
+      clearTimeout(mouseStopTimer)
+    }
+    
+    // If not currently moving, start tracking movement
+    if (!isMouseMoving) {
+      setIsMouseMoving(true)
+      setMouseMovementStartTime(currentTime)
+    }
+    
+    // Check if we've been moving long enough (0.2s) and should show controls
+    if (mouseMovementStartTime && (currentTime - mouseMovementStartTime >= 200)) {
+      if (!controlsVisible && !controlsPinned && !uiSuppressed) {
+        setControlsVisible(true)
+      }
+    }
+    
+    // Set a timer to detect when mouse stops moving
+    const stopTimer = setTimeout(() => {
+      setIsMouseMoving(false)
+      setMouseMovementStartTime(null)
+    }, 50) // Consider mouse stopped if no movement for 50ms
+    
+    setMouseStopTimer(stopTimer)
   }
 
   const handleMouseInteraction = (interactionType: string) => {
-    if (easterEggActive) return
+    if (easterEggActive || uiSuppressed) return
     if (cameraAnimation) {
       console.log(`🎮 ${interactionType} in Auto mode - switching to Manual`)
       setCameraAnimation(false)
@@ -1943,10 +1962,26 @@ function SolarSystemEnhanced() {
     const interval = setInterval(() => {
       if (Date.now() - lastMouseMove > 500 && !controlsPinned && !controlsHovered) {
         setControlsVisible(false)
+        // Reset mouse movement tracking when hiding controls
+        setIsMouseMoving(false)
+        setMouseMovementStartTime(null)
+        if (mouseStopTimer) {
+          clearTimeout(mouseStopTimer)
+          setMouseStopTimer(null)
+        }
       }
     }, 250)
     return () => clearInterval(interval)
-  }, [lastMouseMove, controlsPinned, controlsHovered])
+  }, [lastMouseMove, controlsPinned, controlsHovered, mouseStopTimer])
+  
+  // Cleanup timer on unmount
+  React.useEffect(() => {
+    return () => {
+      if (mouseStopTimer) {
+        clearTimeout(mouseStopTimer)
+      }
+    }
+  }, [mouseStopTimer])
 
   return (
     <div 
@@ -1962,7 +1997,7 @@ function SolarSystemEnhanced() {
     >
       {/* Control Panel */}
       <div 
-        className={`absolute top-4 left-4 z-10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl space-y-3 max-w-xs shadow-2xl transition-opacity duration-500 ${(controlsVisible || controlsPinned) ? 'opacity-100' : 'opacity-0'}`}
+        className={`absolute top-4 left-4 z-10 backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl space-y-3 max-w-xs shadow-2xl transition-opacity duration-500 ${((controlsVisible || controlsPinned) && !uiSuppressed) ? 'opacity-100' : 'opacity-0'}`}
         style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}
         onMouseEnter={() => { setControlsHovered(true); setControlsVisible(true) }}
         onMouseLeave={() => setControlsHovered(false)}
@@ -1991,8 +2026,6 @@ function SolarSystemEnhanced() {
                 setCameraVerticalMax(60)
                 setShowSun(true)
                 setShowOrbits(true)
-                setShowPluto(true)
-                setOrbitOpacity(0.5)
                 setShowMoons(true)
                 setShowAsteroidBelt(true)
                 setShowStars(true)
@@ -2040,45 +2073,8 @@ function SolarSystemEnhanced() {
 
         {showInstructions ? (
           <>
-            
             {/* NASA-Style Camera Operations Manual */}
             <div className="space-y-3 overflow-y-auto" style={{ height: '600px' }}>
-              
-              {/* App Title */}
-              <div className="text-center mb-4">
-                <div className="flex items-start justify-center" style={{ marginBottom: '5px' }}>
-                  {['S', 'P', 'A', 'C', 'E', 'O', 'U', 'T'].map((letter, index) => {
-                    // Calculate font size for each letter (half of intro overlay sizes)
-                    let fontSize;
-                    if (index <= 4) {
-                      // SPACE letters: 42px, 38px, 34px, 30px, 26px
-                      fontSize = 42 - (index * 4);
-                    } else {
-                      // OUT letters: 42px, 36px, 30px  
-                      fontSize = 42 - ((index - 5) * 6);
-                    }
-                    
-                    return (
-                      <span
-                        key={`title-${index}`}
-                        style={{
-                          fontFamily: '"Oups Clean", "Bebas Neue", cursive',
-                          fontSize: `${fontSize}px`,
-                          letterSpacing: '2px',
-                          background: 'linear-gradient(135deg, #FFB300 0%, #FDD835 50%, #FFB300 100%)',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          backgroundClip: 'text',
-                          display: 'inline-block',
-                          lineHeight: '0.8'
-                        }}
-                      >
-                        {letter}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
               
               {/* Camera Modes */}
               <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-4">
@@ -2188,8 +2184,8 @@ function SolarSystemEnhanced() {
             </div>
             
             {/* Large Display */}
-            <div className="bg-black/60 rounded border border-cyan-400/20 px-4 py-2 mb-3 text-center flex flex-col justify-center" style={{ height: '97px' }}>
-              <div className="font-mono text-cyan-300 font-bold tracking-wider" style={{ fontSize: '23px' }}>
+            <div className="bg-black/60 rounded border border-cyan-400/20 p-4 mb-3 text-center h-28 flex flex-col justify-center">
+              <div className="text-2xl font-mono text-cyan-300 font-bold tracking-wider">
                 {String(((cameraSpeed / 0.2) * 100).toFixed(1)).padStart(5, '0')}%
               </div>
               <div className="text-[10px] text-gray-400 mt-0.5 font-light">CAMERA VELOCITY</div>
@@ -2307,7 +2303,7 @@ function SolarSystemEnhanced() {
             <div className="grid grid-cols-2 gap-2" style={{ marginTop: '22px' }}>
               <button
                 onClick={() => setCameraAnimation(false)}
-                className={`px-2 py-0.5 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
+                className={`px-2 py-1 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                   !cameraAnimation 
                     ? 'bg-red-500/20 border-red-400/50 text-red-300' 
                     : 'bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600/50'
@@ -2317,7 +2313,7 @@ function SolarSystemEnhanced() {
               </button>
               <button
                 onClick={() => setCameraAnimation(true)}
-                className={`px-2 py-0.5 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
+                className={`px-2 py-1 text-[10px] font-semibold rounded border transition-all duration-200 flex items-center justify-center ${
                   cameraAnimation 
                     ? 'bg-blue-500/20 border-blue-400/50 text-blue-300' 
                     : 'bg-gray-700/50 border-gray-600 text-gray-400 hover:bg-gray-600/50'
@@ -2338,11 +2334,11 @@ function SolarSystemEnhanced() {
             </div>
             
             {/* Large Display */}
-            <div className="bg-black/60 rounded border border-cyan-400/20 px-4 py-2 mb-3 text-center flex flex-col justify-center" style={{ height: '97px' }}>
-              <div className="font-mono text-cyan-300 font-bold tracking-wider" style={{ fontSize: '19px' }}>
+            <div className="bg-black/60 rounded border border-cyan-400/20 p-4 mb-3 text-center h-28 flex flex-col justify-center">
+              <div className="text-xl font-mono text-cyan-300 font-bold tracking-wider">
                 <span className="text-xs text-cyan-300">min</span> {cameraVerticalMin}°
               </div>
-              <div className="font-mono text-cyan-300 font-bold tracking-wider" style={{ marginTop: '-0.2rem', fontSize: '19px' }}>
+              <div className="text-xl font-mono text-cyan-300 font-bold tracking-wider" style={{ marginTop: '-0.2rem' }}>
                 <span className="text-xs text-cyan-300">max</span> {cameraVerticalMax}°
               </div>
               <div className="text-[10px] text-gray-400 mt-0.5 font-light">VIEWING ANGLE RANGE</div>
@@ -2507,7 +2503,7 @@ function SolarSystemEnhanced() {
           
           {/* Large Display */}
           <div className="bg-black/60 rounded border border-cyan-400/20 p-4 mb-3 text-center h-14 flex flex-col justify-center">
-            <div className="font-mono text-cyan-300 font-bold tracking-wider" style={{ fontSize: '23px' }}>
+            <div className="text-2xl font-mono text-cyan-300 font-bold tracking-wider">
               {timeScale === 0 ? 'PAUSED' : `${String(timeScale.toFixed(0)).padStart(4, '0')}×`}
             </div>
             <div className="text-[10px] text-gray-400 mt-0.5 font-light">TIME FACTOR</div>
@@ -2653,13 +2649,13 @@ function SolarSystemEnhanced() {
             <div className="text-[10px] font-semibold text-gray-300 tracking-wider">DISPLAY CONFIGURATION</div>
             <div className={`px-1 py-0.5 rounded text-[7px] font-medium ${
               (() => {
-                const activeCount = [showSun, showPluto, showMoons, showAsteroidBelt, showStars, showPlanets].filter(Boolean).length
+                const activeCount = [showSun, showOrbits, showMoons, showAsteroidBelt, showStars, showPlanets].filter(Boolean).length
                 return activeCount === 0 
                   ? 'bg-orange-500/20 border border-orange-400/40 text-orange-300' 
                   : 'bg-green-500/20 border border-green-400/40 text-green-300'
               })()
             }`}>
-              {[showSun, showPluto, showMoons, showAsteroidBelt, showStars, showPlanets].filter(Boolean).length} ACTIVE
+              {[showSun, showOrbits, showMoons, showAsteroidBelt, showStars, showPlanets].filter(Boolean).length} ACTIVE
             </div>
           </div>
           
@@ -2667,12 +2663,6 @@ function SolarSystemEnhanced() {
             <div className="flex flex-col items-center">
               <div 
                 onClick={() => setShowSun(!showSun)}
-                onMouseEnter={() => {
-                  setHoveredObject(celestialInfo["Sun"])
-                }}
-                onMouseLeave={() => {
-                  setHoveredObject(null)
-                }}
                 className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showSun 
                     ? 'bg-gray-800/40 border-cyan-400/60' 
@@ -2707,23 +2697,21 @@ function SolarSystemEnhanced() {
             
             <div className="flex flex-col items-center">
               <div 
-                onClick={() => setShowPluto(!showPluto)}
-                onMouseEnter={() => setHoveredObject(celestialInfo["Pluto"])}
-                onMouseLeave={() => setHoveredObject(null)}
+                onClick={() => setShowOrbits(!showOrbits)}
                 className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
-                  showPluto 
+                  showOrbits 
                     ? 'bg-gray-800/40 border-cyan-400/60' 
                     : 'bg-gray-900/60 border-gray-700/40'
                 }`}
                 style={{
-                  boxShadow: showPluto 
+                  boxShadow: showOrbits 
                     ? '0 0 15px rgba(0, 255, 255, 0.4), 0 0 25px rgba(0, 255, 255, 0.2)' 
                     : 'none'
                 }}
               >
                 <div 
                   className={`absolute rounded-full transition-all duration-300 ${
-                    showPluto 
+                    showOrbits 
                       ? 'bg-cyan-400' 
                       : 'bg-gray-500'
                   }`}
@@ -2731,15 +2719,15 @@ function SolarSystemEnhanced() {
                     width: '15px',
                     height: '15px',
                     top: '50%',
-                    left: showPluto ? '26.5px' : '6.5px',
+                    left: showOrbits ? '26.5px' : '6.5px',
                     transform: 'translateY(-50%)',
-                    boxShadow: showPluto 
+                    boxShadow: showOrbits 
                       ? '0 0 10px rgba(0, 255, 255, 0.6)' 
                       : 'none'
                   }}
                 ></div>
               </div>
-              <div className="text-[10px] text-white/80 mt-1 font-light">PLUTO</div>
+              <div className="text-[10px] text-white/80 mt-1 font-light">ORBITS</div>
             </div>
             
             <div className="flex flex-col items-center">
@@ -2818,12 +2806,6 @@ function SolarSystemEnhanced() {
                   setShowAsteroidBelt(!showAsteroidBelt)
                   setShowKuiperBelt(!showKuiperBelt)
                 }}
-                onMouseEnter={() => {
-                  setHoveredObject(celestialInfo["Asteroid Belt"])
-                }}
-                onMouseLeave={() => {
-                  setHoveredObject(null)
-                }}
                 className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showAsteroidBelt 
                     ? 'bg-gray-800/40 border-cyan-400/60' 
@@ -2893,108 +2875,8 @@ function SolarSystemEnhanced() {
           </div>
         </div>
 
-        {/* Side-by-side controls: ORBIT VISIBILITY and GALAXY LUMINOSITY */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* NASA-Style Orbit Visibility Control */}
-          <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-[10px] font-semibold text-gray-300 tracking-wider">ORBIT VISIBILITY</div>
-              <div className="px-1 py-0.5 bg-green-500/20 border border-green-400/40 rounded text-[7px] text-green-300 font-medium">
-                {showOrbits ? (orbitOpacity * 100).toFixed(0) : '0'}%
-              </div>
-            </div>
-            
-            {/* Futuristic Slider */}
-            <div className="relative w-full mb-4 pb-2">
-              {/* Track */}
-              <div className="relative h-1 rounded-sm" style={{
-                background: 'linear-gradient(to right, transparent, rgba(0, 200, 255, 0.3))'
-              }}>
-                {/* Active/Filled Track */}
-                <div 
-                  className="absolute h-1 rounded-sm"
-                  style={{
-                    width: `${showOrbits ? orbitOpacity * 100 : 0}%`,
-                    background: '#00ffff',
-                    boxShadow: '0 0 8px rgba(0, 255, 255, 0.7)'
-                  }}
-                />
-                
-                {/* Slider Handle */}
-                <div 
-                  className="absolute w-3 h-3 -top-1 rounded-full cursor-pointer transition-all duration-200"
-                  style={{
-                    left: `calc(${showOrbits ? orbitOpacity * 100 : 0}% - 0.375rem)`,
-                    background: 'radial-gradient(circle, #00ffff, #0080ff)',
-                    boxShadow: '0 0 12px rgba(0, 255, 255, 0.8)',
-                    border: '1px solid rgba(0, 255, 255, 0.6)'
-                  }}
-                />
-                
-                {/* Interactive Area */}
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={showOrbits ? orbitOpacity : 0}
-                  onChange={(e) => {
-                    const newOpacity = parseFloat(e.target.value)
-                    setOrbitOpacity(newOpacity)
-                    // Auto-enable orbits if opacity > 0
-                    if (newOpacity > 0 && !showOrbits) {
-                      setShowOrbits(true)
-                    }
-                    // Auto-disable orbits if opacity = 0
-                    if (newOpacity === 0) {
-                      setShowOrbits(false)
-                    }
-                  }}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  onMouseDown={(e) => e.stopPropagation()}
-                />
-                
-                {/* Scientific Tick Marks */}
-                {Array.from({ length: 37 }, (_, i) => {
-                  const position = (i / 36) * 100
-                  const isMajor = i % 6 === 0
-                  return (
-                    <div
-                      key={i}
-                      className="absolute"
-                      style={{
-                        left: `${position}%`,
-                        bottom: '-8px',
-                        width: isMajor ? '1px' : '0.5px',
-                        height: isMajor ? '6px' : '3px',
-                        background: 'rgba(255, 255, 255, 0.3)',
-                        transform: 'translateX(-50%)'
-                      }}
-                    />
-                  )
-                })}
-                
-                {/* Percentage Labels */}
-                {[0, 25, 50, 75, 100].map((percent) => (
-                  <div
-                    key={percent}
-                    className="absolute text-[8px] text-gray-400 font-medium"
-                    style={{
-                      left: `${percent}%`,
-                      bottom: '-20px',
-                      transform: 'translateX(-50%)',
-                      textAlign: 'center'
-                    }}
-                  >
-                    {percent}
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* NASA-Style Background Intensity Control */}
-          <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
+        {/* NASA-Style Background Intensity Control */}
+        <div className="bg-gray-900/90 border border-cyan-500/30 rounded-lg p-3 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <div className="text-[10px] font-semibold text-gray-300 tracking-wider">GALAXY LUMINOSITY</div>
             <div className="px-1 py-0.5 bg-green-500/20 border border-green-400/40 rounded text-[7px] text-green-300 font-medium">
@@ -3110,7 +2992,6 @@ function SolarSystemEnhanced() {
             `}</style>
           </div>
         </div>
-        </div>
           </>
         )}
 
@@ -3186,32 +3067,12 @@ function SolarSystemEnhanced() {
               planetName={planet.name}
               onHover={handleObjectHover}
               onUnhover={handleObjectUnhover}
-              orbitOpacity={orbitOpacity}
             />
           ))}
           
-          {/* Regular planets with moons (excluding Pluto) */}
-          {showPlanets && planetData.filter(planet => planet.name !== 'Pluto').map((planet) => (
-            <Planet 
-              key={planet.name}
-              distance={planet.distance}
-              radius={planet.radius}
-              color={planet.color}
-              speed={planet.speed * timeScale}
-              name={planet.name}
-              startAngle={planet.startAngle}
-              moons={showMoons ? planet.moons : undefined}
-              timeScale={timeScale}
-              onHover={handleObjectHover}
-              onUnhover={handleObjectUnhover}
-              inclination={planet.inclination}
-              eccentricity={planet.eccentricity}
-              axialTilt={planet.axialTilt}
-            />
-          ))}
+          {/* All planets with moons */}
 
-          {/* Pluto with Charon (separate control) */}
-          {showPluto && planetData.filter(planet => planet.name === 'Pluto').map((planet) => (
+          {showPlanets && planetData.map((planet) => (
             <Planet 
               key={planet.name}
               distance={planet.distance}
@@ -3280,6 +3141,11 @@ function SolarSystemEnhanced() {
           setShowIntroOverlay(false)
           // Ensure camera starts in automatic mode
           setCameraAnimation(true)
+          // Start UI suppression for 2 seconds
+          setUiSuppressed(true)
+          setTimeout(() => {
+            setUiSuppressed(false)
+          }, 2000)
         }}
       />
       
