@@ -631,7 +631,13 @@ function Moon({
         onPointerLeave={() => onUnhover()}
       >
         <sphereGeometry args={[radius, 8, 8]} />
-        <meshBasicMaterial transparent opacity={0} />
+        <meshStandardMaterial 
+          color={color}
+          roughness={0.9}
+          metalness={0}
+          emissive={color}
+          emissiveIntensity={0.15}
+        />
       </mesh>
     </group>
   )
@@ -1415,7 +1421,7 @@ const planetData = [
     moons: [
       { distance: 2.5, radius: 0.15, color: '#8B8680', speed: 0.034, startAngle: 0 } // Charon - same size as Earth's Moon for visibility
     ]
-  },
+  }
 ]
 
 // Kuiper Belt - Distant icy objects beyond Neptune
@@ -3258,9 +3264,9 @@ function SolarSystemEnhanced() {
 
           
           {/* Saturn's Rings */}
-          {showPlanets && saturnData && (
+          {showPlanets && (
             <SaturnRings 
-              planet={saturnData}
+              planet={planetData.find(p => p.name === 'Saturn')}
               timeScale={timeScale}
             />
           )}
@@ -3286,7 +3292,6 @@ function SolarSystemEnhanced() {
       </Canvas>
       
       {/* Sun Easter Egg Overlay */}
-      {console.log('🚨 RENDERING CHECK - easterEggActive:', easterEggActive)}
       <SunEasterEgg
         isActive={easterEggActive}
         onComplete={handleEasterEggComplete}
@@ -3294,7 +3299,6 @@ function SolarSystemEnhanced() {
       />
       
       {/* Milky Way Easter Egg Overlay */}
-      {console.log('🌌 RENDERING CHECK - milkyWayEasterEggActive:', milkyWayEasterEggActive)}
       <MilkyWayEasterEgg
         isActive={milkyWayEasterEggActive}
         onComplete={handleMilkyWayEasterEggComplete}

@@ -105,6 +105,18 @@ export const planets: PlanetData[] = [
     hasRings: false,
     texture: 'neptune.jpg',
     tiltDeg: 28.32
+  },
+  {
+    name: 'Pluto',
+    color: '#C5A572',
+    radiusKm: 1188.3,
+    distanceAu: 39.482,
+    periodDays: 90560,
+    hasRings: false,
+    texture: 'pluto.jpg',
+    tiltDeg: 122.53,
+    inclination: 17.14,
+    eccentricity: 0.248
   }
 ]
 
@@ -185,6 +197,15 @@ export const moons: MoonData[] = [
     radiusKm: 763.8,
     distanceFromParent: 8.8,
     periodDays: 4.518
+  },
+  // Pluto moon
+  {
+    name: 'Charon',
+    parent: 'Pluto',
+    color: '#8B8680',
+    radiusKm: 606,
+    distanceFromParent: 19.6, // Distance in Pluto radii
+    periodDays: 6.387
   }
 ]
 
