@@ -4,7 +4,7 @@ import React, { useRef, useState, useMemo, useEffect, createContext, useContext 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
 import { Mesh, Group, InstancedMesh, Object3D, Vector2, Raycaster, Vector3, CanvasTexture, RepeatWrapping, ClampToEdgeWrapping, BackSide, TextureLoader, DoubleSide } from 'three'
-import { RotateCcw, EyeOff, Eye, Maximize, Info, ArrowLeft } from 'lucide-react'
+import { RotateCcw, EyeOff, Eye, Maximize, Info, ArrowLeft, Telescope, Focus, X } from 'lucide-react'
 import SunEasterEgg from './SunEasterEgg'
 import MilkyWayEasterEgg from './MilkyWayEasterEgg'
 import IntroOverlay from './IntroOverlay'
@@ -469,14 +469,12 @@ function MilkyWay({ brightness }: { brightness: number }) {
 // Asteroid Belt - Individual orbital paths
 function AsteroidBelt({ 
   show, 
-  timeScale, 
-  onHover, 
-  onUnhover 
+  timeScale,
+  onContextMenu 
 }: { 
   show: boolean, 
   timeScale: number,
-  onHover?: (info: any) => void,
-  onUnhover?: () => void 
+  onContextMenu?: (planetName: string, position: { x: number, y: number }) => void
 }) {
   const meshRef = useRef<InstancedMesh>(null)
   const tempObject = useMemo(() => new Object3D(), [])
@@ -537,6 +535,12 @@ function AsteroidBelt({
       {/* Invisible wide hover area - same thickness as orbit paths */}
       <mesh 
         rotation={[-Math.PI / 2, 0, 0]}
+        onPointerDown={(e) => {
+          e.stopPropagation() // CRITICAL: Prevent all clicks from affecting camera mode
+          if (e.button === 2 && onContextMenu) { // Right click
+            onContextMenu('Asteroid Belt', { x: e.clientX, y: e.clientY })
+          }
+        }}
       >
         <ringGeometry args={[48, 72, 64]} />
         <meshBasicMaterial 
@@ -550,8 +554,12 @@ function AsteroidBelt({
   )
 }
 
-// Simple animated Sun
-function Sun({ onHover, onUnhover }: { onHover: (info: any) => void, onUnhover: () => void }) {
+// Simple animated Sun  
+function Sun({ 
+  onContextMenu 
+}: { 
+  onContextMenu?: (planetName: string, position: { x: number, y: number }) => void
+}) {
   const meshRef = useRef<Mesh>(null)
 
   useFrame((state, delta) => {
@@ -569,12 +577,13 @@ function Sun({ onHover, onUnhover }: { onHover: (info: any) => void, onUnhover: 
       </mesh>
       
       {/* Invisible hover zone - larger area */}
-      <mesh 
-        onPointerEnter={(e) => {
-          e.stopPropagation()
-          onHover(celestialInfo.Sun)
+            <mesh
+        onPointerDown={(e) => {
+          e.stopPropagation() // CRITICAL: Prevent all clicks from affecting camera mode
+          if (e.button === 2 && onContextMenu) { // Right click
+            onContextMenu('Sun', { x: e.clientX, y: e.clientY })
+          }
         }}
-        onPointerLeave={() => onUnhover()}
       >
         <sphereGeometry args={[7, 16, 16]} />
         <meshBasicMaterial 
@@ -645,6 +654,111 @@ function Moon({
 
 // Saturn's Rings are now embedded directly in the Planet component for perfect alignment
 
+// Planet Context Menu Component - Glassmorphic Design
+function PlanetContextMenu({ 
+  planetName, 
+  position, 
+  visible, 
+  onExplore,
+  onClose 
+}: { 
+  planetName: string,
+  position: { x: number, y: number },
+  visible: boolean,
+  onExplore: () => void,
+  onClose: () => void
+}) {
+  if (!visible) return null
+
+  const handleExplore = (e: React.MouseEvent) => {
+    e.stopPropagation() // CRITICAL: Prevent camera mode switching
+    e.preventDefault() // Additional protection
+    onExplore()
+    onClose()
+  }
+
+  const handleFollow = (e: React.MouseEvent) => {
+    e.stopPropagation() // CRITICAL: Prevent camera mode switching
+    e.preventDefault() // Additional protection
+    console.log(`🎯 Follow ${planetName} - Not implemented yet`)
+    onClose()
+  }
+
+  return (
+    <>
+      <style jsx>{`
+        .planet-overlay {
+          background: linear-gradient(135deg, rgba(6, 182, 212, 0.04) 0%, rgba(59, 130, 246, 0.02) 100%);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(6, 182, 212, 0.15);
+          border-radius: 12px;
+          padding: 3px;
+          position: fixed;
+          overflow: hidden;
+          z-index: 1000;
+          opacity: 0.85;
+          left: ${position.x}px;
+          top: ${position.y}px;
+          transform: translate(-50%, -10px);
+        }
+        .planet-option {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 18px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          border-radius: 9px;
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 14px;
+        }
+        .planet-option:hover {
+          background: rgba(6, 182, 212, 0.08);
+        }
+        .planet-divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(6, 182, 212, 0.15), transparent);
+          margin: 1px 12px;
+        }
+        .explore-icon {
+          color: #06b6d4;
+          opacity: 0.7;
+        }
+        .follow-icon {
+          color: #00ff88;
+          opacity: 0.7;
+        }
+      `}</style>
+      <div 
+        className="planet-overlay" 
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onMouseUp={(e) => e.stopPropagation()}
+      >
+        <div 
+          className="planet-option" 
+          onClick={handleExplore}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+        >
+          <Telescope size={16} className="explore-icon" />
+          <span>Explore {planetName === 'Sun' ? 'the Sun' : planetName}</span>
+        </div>
+        <div className="planet-divider"></div>
+        <div 
+          className="planet-option" 
+          onClick={handleFollow}
+          onMouseDown={(e) => e.stopPropagation()}
+          onMouseUp={(e) => e.stopPropagation()}
+        >
+          <Focus size={16} className="follow-icon" />
+          <span>Follow {planetName === 'Sun' ? 'the Sun' : planetName}</span>
+        </div>
+      </div>
+    </>
+  )
+}
+
 // Enhanced Earth with day/night, clouds, and realistic features
 function EnhancedEarth({ 
   distance, 
@@ -654,8 +768,7 @@ function EnhancedEarth({
   startAngle,
   moons,
   timeScale,
-  onHover,
-  onUnhover
+  onContextMenu
 }: { 
   distance: number
   radius: number
@@ -664,8 +777,7 @@ function EnhancedEarth({
   startAngle: number
   moons?: any[]
   timeScale: number
-  onHover: (info: any) => void
-  onUnhover: () => void
+  onContextMenu?: (planetName: string, position: { x: number, y: number }) => void
 }) {
   const groupRef = useRef<Group>(null)
   const earthRef = useRef<Mesh>(null)
@@ -963,12 +1075,12 @@ function EnhancedEarth({
         
         {/* Invisible hover zone - larger area */}
         <mesh
-          onPointerEnter={(e) => {
-            e.stopPropagation()
-            const info = celestialInfo[name as keyof typeof celestialInfo]
-            if (info) onHover(info)
+          onPointerDown={(e) => {
+            e.stopPropagation() // CRITICAL: Prevent all clicks from affecting camera mode
+            if (e.button === 2 && onContextMenu) { // Right click
+              onContextMenu(name, { x: e.clientX, y: e.clientY })
+            }
           }}
-          onPointerLeave={() => onUnhover()}
         >
           <sphereGeometry args={[radius + 2.4, 16, 16]} />
           <meshBasicMaterial 
@@ -1077,8 +1189,7 @@ function Planet({
   startAngle,
   moons,
   timeScale,
-  onHover,
-  onUnhover,
+  onContextMenu,
   inclination = 0,
   eccentricity = 0,
   axialTilt = 0
@@ -1091,8 +1202,7 @@ function Planet({
   startAngle: number
   moons?: any[]
   timeScale: number
-  onHover: (info: any) => void
-  onUnhover: () => void
+  onContextMenu?: (planetName: string, position: { x: number, y: number }) => void
   inclination?: number
   eccentricity?: number
   axialTilt?: number
@@ -1152,8 +1262,7 @@ function Planet({
             startAngle={startAngle}
             moons={moons}
             timeScale={timeScale}
-            onHover={onHover}
-            onUnhover={onUnhover}
+            onContextMenu={onContextMenu}
           />
         </group>
       </group>
@@ -1174,12 +1283,12 @@ function Planet({
         
         {/* Invisible hover zone - larger area */}
         <mesh
-          onPointerEnter={(e) => {
-            e.stopPropagation()
-            const info = celestialInfo[name as keyof typeof celestialInfo]
-            if (info) onHover(info)
+          onPointerDown={(e) => {
+            e.stopPropagation() // CRITICAL: Prevent all clicks from affecting camera mode
+            if (e.button === 2 && onContextMenu) { // Right click
+              onContextMenu(name, { x: e.clientX, y: e.clientY })
+            }
           }}
-          onPointerLeave={() => onUnhover()}
         >
           <sphereGeometry args={[radius + 2.4, 16, 16]} />
           <meshBasicMaterial 
@@ -1732,6 +1841,10 @@ function SolarSystemEnhanced() {
     setShowIntroOverlay(shouldShow)
     setIntroChecked(true)
   }, [])
+
+  // Context menu state for glassmorphic right-click menus
+  const [contextMenu, setContextMenu] = useState<{planetName: string, position: {x: number, y: number}, visible: boolean} | null>(null)
+  const [preventCameraSwitch, setPreventCameraSwitch] = useState(false)
   
   
   
@@ -1940,6 +2053,18 @@ function SolarSystemEnhanced() {
     setHoveredObject(null)
   }
 
+  // Explore functionality - show persistent info card
+  const explorePlanet = (planetName: string) => {
+    console.log(`🔭 Exploring ${planetName}`)
+    setPreventCameraSwitch(true) // Temporarily prevent camera switching
+    const planetInfo = celestialInfo[planetName as keyof typeof celestialInfo]
+    if (planetInfo) {
+      setHoveredObject(planetInfo)
+    }
+    // Reset prevention after a brief delay
+    setTimeout(() => setPreventCameraSwitch(false), 100)
+  }
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (easterEggActive) return
     setMousePosition({ x: e.clientX, y: e.clientY })
@@ -1948,7 +2073,11 @@ function SolarSystemEnhanced() {
 
   const handleMouseInteraction = (interactionType: string) => {
     if (easterEggActive) return
-    if (cameraAnimation) {
+    if (preventCameraSwitch) {
+      console.log(`🛡️ Camera switch prevented during menu interaction`)
+      return
+    }
+    if (cameraAnimation && interactionType !== 'Planet interaction') {
       console.log(`🎮 ${interactionType} in Auto mode - switching to Manual`)
       setCameraAnimation(false)
     }
@@ -1964,17 +2093,43 @@ function SolarSystemEnhanced() {
     return () => clearInterval(interval)
   }, [lastMouseMove, controlsPinned, controlsHovered])
 
+  // Handle escape key to close context menu and info cards
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (contextMenu?.visible) setContextMenu(null)
+        if (hoveredObject) setHoveredObject(null)
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [contextMenu, hoveredObject])
+
   return (
     <div 
       className="w-full h-screen relative overflow-hidden bg-black"
       onMouseMove={handleMouseMove}
       onMouseDown={(e) => {
-        if (e.button === 0) handleMouseInteraction('Left click') // Left click
-        if (e.button === 2) handleMouseInteraction('Right click') // Right click
+        // Only handle clicks that aren't on planets/UI elements
+        if (e.button === 0 && e.currentTarget === e.target) {
+          handleMouseInteraction('Left click') // Left click only on empty space
+        }
+        // Right clicks are handled by planet context menus, not camera control
       }}
       onWheel={() => handleMouseInteraction('Mouse scroll')}
       onContextMenu={(e) => e.preventDefault()} // Prevent right-click menu
-
+      onClick={(e) => {
+        // Only trigger camera changes for clicks that reach this level (not planet clicks)
+        // Close context menu and info card when clicking elsewhere
+        if (contextMenu?.visible) {
+          setContextMenu(null)
+        }
+        if (hoveredObject) {
+          setHoveredObject(null)
+        }
+        // Completely disable camera switching via onClick - let only onMouseDown handle it
+        // This prevents any bubbling issues from context menus
+      }}
     >
       {/* Control Panel */}
       <div 
@@ -3149,11 +3304,24 @@ function SolarSystemEnhanced() {
       {/* Tooltip */}
       {hoveredObject && (
         <div 
-          className="absolute top-4 right-4 z-50 pointer-events-none backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl shadow-2xl max-w-xs"
+          className="absolute top-4 right-4 z-50 pointer-events-auto backdrop-blur-sm border border-white/20 text-white p-4 rounded-2xl shadow-2xl max-w-xs"
           style={{ 
             backgroundColor: 'rgba(0, 0, 0, 0.05)'
           }}
+          onClick={(e) => e.stopPropagation()} // CRITICAL: Prevent camera mode switching
         >
+          {/* Close Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation() // CRITICAL: Prevent camera mode switching
+              setHoveredObject(null)
+            }}
+            className="absolute top-2 right-2 w-6 h-6 rounded-full bg-gray-800/60 hover:bg-gray-700/80 border border-gray-600/40 hover:border-cyan-400/60 flex items-center justify-center transition-all duration-200"
+            style={{ zIndex: 10 }}
+          >
+            <X size={12} className="text-gray-400 hover:text-cyan-300" />
+          </button>
+          
           {/* Celestial Body Media */}
           <CelestialBodyMedia celestialBody={hoveredObject} />
           
@@ -3206,7 +3374,13 @@ function SolarSystemEnhanced() {
           
           {/* Sun at center */}
 
-          {showSun && <Sun onHover={handleObjectHover} onUnhover={handleObjectUnhover} />}
+          {showSun && (
+            <Sun 
+              onContextMenu={(planetName, position) => {
+                setContextMenu({ planetName, position, visible: true })
+              }}
+            />
+          )}
           
           {/* Regular planet orbit rings (excluding Pluto) */}
           {showOrbits && planetData.filter(planet => planet.name !== 'Pluto').map((planet) => (
@@ -3214,8 +3388,6 @@ function SolarSystemEnhanced() {
               key={`${planet.name}-orbit`} 
               distance={planet.distance}
               planetName={planet.name}
-              onHover={handleObjectHover}
-              onUnhover={handleObjectUnhover}
               orbitOpacity={orbitOpacity}
             />
           ))}
@@ -3232,8 +3404,9 @@ function SolarSystemEnhanced() {
               startAngle={planet.startAngle}
               moons={showMoons ? planet.moons : undefined}
               timeScale={timeScale}
-              onHover={handleObjectHover}
-              onUnhover={handleObjectUnhover}
+              onContextMenu={(planetName, position) => {
+                setContextMenu({ planetName, position, visible: true })
+              }}
               inclination={planet.inclination}
               eccentricity={planet.eccentricity}
               axialTilt={planet.axialTilt}
@@ -3252,8 +3425,9 @@ function SolarSystemEnhanced() {
               startAngle={planet.startAngle}
               moons={showMoons ? planet.moons : undefined}
               timeScale={timeScale}
-              onHover={handleObjectHover}
-              onUnhover={handleObjectUnhover}
+              onContextMenu={(planetName, position) => {
+                setContextMenu({ planetName, position, visible: true })
+              }}
               inclination={planet.inclination}
               eccentricity={planet.eccentricity}
               axialTilt={planet.axialTilt}
@@ -3267,16 +3441,15 @@ function SolarSystemEnhanced() {
           <AsteroidBelt 
             show={showAsteroidBelt} 
             timeScale={timeScale} 
-            onHover={handleObjectHover}
-            onUnhover={handleObjectUnhover}
+            onContextMenu={(planetName, position) => {
+              setContextMenu({ planetName, position, visible: true })
+            }}
           />
           
           {/* Kuiper Belt */}
           <KuiperBelt 
             show={showKuiperBelt} 
             timeScale={timeScale}
-            onHover={handleObjectHover}
-            onUnhover={handleObjectUnhover}
           />
           
         </group>
@@ -3307,6 +3480,15 @@ function SolarSystemEnhanced() {
           }}
         />
       )}
+      
+      {/* Planet Context Menu */}
+      <PlanetContextMenu
+        planetName={contextMenu?.planetName || ''}
+        position={contextMenu?.position || { x: 0, y: 0 }}
+        visible={contextMenu?.visible || false}
+        onExplore={() => explorePlanet(contextMenu?.planetName || '')}
+        onClose={() => setContextMenu(null)}
+      />
       
     </div>
   )
