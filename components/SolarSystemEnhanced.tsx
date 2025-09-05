@@ -1411,7 +1411,7 @@ const planetData = [
   { 
     name: 'Pluto', 
     distance: 148, // 39.5 AU scaled visually (enhanced distance from Neptune's 120)
-    radius: 0.8, // Same size as Mercury for proper scale
+    radius: 0.68, // 15% smaller than Mercury (0.8 * 0.85 = 0.68)
     color: '#C5A572', // Brownish-tan from New Horizons data
     speed: 0.0000024, // 0.0024x Earth's speed (248 year orbit vs 1 year)
     startAngle: 0.6,
