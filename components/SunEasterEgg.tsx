@@ -149,6 +149,9 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     element.style.transform = `translateX(${startX}px) translateY(calc(-50% + ${initialSineOffset}px)) scale(0.28) rotate(0deg)`
     setRealTimePosition(startX) // Set initial position for debug
     
+    // Force immediate repaint to avoid flash
+    element.offsetHeight // Force browser reflow/repaint
+    
     // Animation loop
     const animate = () => {
       // Update position FIRST, then apply transform
@@ -195,6 +198,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
           // Complete after overlay fade-out
           setTimeout(() => {
             console.log('🚨 Calling onComplete() to end Easter Egg')
+            setIsAnimating(false) // Reset animation state BEFORE calling onComplete
             onComplete()
           }, 800) // Wait for overlay fade-out
         }, 500) // Wait for text fade-out first
@@ -208,9 +212,46 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
     animationFrameRef.current = requestAnimationFrame(animate)
   }
 
+  // Reset animation state when Easter Egg becomes inactive
+  useEffect(() => {
+    if (!isActive && isAnimating) {
+      console.log('🚨 Easter Egg inactive - resetting animation state')
+      setIsAnimating(false)
+      
+      // Reset all visual state
+      setShowSvg(false)
+      setShowQuote(false)
+      setShowMovieInfo(false)
+      setCurrentSilhouette(null)
+      setSvgContent('')
+      setDisplayedQuote('')
+      setRealTimePosition(null)
+      setDebugInfo(null)
+      
+      // Reset element transforms if they exist
+      const element = animationRef.current
+      if (element) {
+        element.style.transform = 'translateX(-500px) translateY(-50%) scale(0.28)'
+        element.dataset.fadeStarted = ''
+      }
+      
+      // Clear any running animations
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+        animationFrameRef.current = null
+      }
+      if (quoteTimeoutRef.current) {
+        clearTimeout(quoteTimeoutRef.current)
+        quoteTimeoutRef.current = undefined
+      }
+    }
+  }, [isActive, isAnimating])
+
   // Start the Easter egg animation
   useEffect(() => {
     if (isActive && !isAnimating) {
+      console.log('🚨 Starting Easter Egg - fresh state')
+      
       // Reset all state for fresh start
       setShowSvg(false)
       setShowQuote(false)
@@ -219,6 +260,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
       setSvgContent('')
       setDisplayedQuote('')
       setRealTimePosition(null)
+      setDebugInfo(null)
       
       setIsAnimating(true)
       
@@ -237,8 +279,8 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
         const svgContent = await loadSVGContent(selectedSilhouette.svgPath)
         setSvgContent(svgContent)
         
-        // Start animation immediately (no delay)
-        console.log('🎬 Starting SVG animation immediately...')
+        // Show SVG and start animation (back to original working approach)
+        console.log('🎬 Starting SVG animation...')
         setShowSvg(true)
         
         // Start animation immediately after showing SVG
@@ -332,7 +374,7 @@ export default function SunEasterEgg({ isActive, onComplete, sunColor }: SunEast
                 onMouseEnter={() => setShowMovieInfo(true)}
                 onMouseLeave={() => setShowMovieInfo(false)}
               >
-                {displayedQuote}
+                "{displayedQuote}"
               </p>
               {/* Movie info ALWAYS rendered (prevents layout shift) but invisible until hover */}
               <p 

@@ -576,8 +576,14 @@ function Sun({ onHover, onUnhover }: { onHover: (info: any) => void, onUnhover: 
         }}
         onPointerLeave={() => onUnhover()}
       >
-        <sphereGeometry args={[7, 8, 8]} />
-        <meshBasicMaterial transparent opacity={0} />
+        <sphereGeometry args={[7, 16, 16]} />
+        <meshBasicMaterial 
+          transparent 
+          opacity={0} 
+          depthWrite={false}
+          depthTest={false}
+          visible={false}
+        />
       </mesh>
     </group>
   )
@@ -625,7 +631,7 @@ function Moon({
         onPointerLeave={() => onUnhover()}
       >
         <sphereGeometry args={[radius, 8, 8]} />
-        <meshBasicMaterial color={color} />
+        <meshBasicMaterial transparent opacity={0} />
       </mesh>
     </group>
   )
@@ -991,8 +997,14 @@ function EnhancedEarth({
           }}
           onPointerLeave={() => onUnhover()}
         >
-          <sphereGeometry args={[radius + 2.4, 8, 8]} />
-          <meshBasicMaterial transparent opacity={0} />
+          <sphereGeometry args={[radius + 2.4, 16, 16]} />
+          <meshBasicMaterial 
+            transparent 
+            opacity={0} 
+            depthWrite={false}
+            depthTest={false}
+            visible={false}
+          />
         </mesh>
         
         {/* Clouds Layer */}
@@ -1136,8 +1148,17 @@ function Planet({
       groupRef.current.rotation.y = angle
       
       if (planetGroupRef.current) {
-        planetGroupRef.current.position.x = currentDistance
-        planetGroupRef.current.position.y = Math.sin(angle) * inclination * 0.5 // Much smaller multiplier for minimal vertical movement
+        if (name === 'Pluto') {
+          // For Pluto: Apply dramatic 17° inclination with proper 3D orbital motion
+          const inclinationMultiplier = 15 // Large multiplier to make 17° visually dramatic
+          planetGroupRef.current.position.x = currentDistance * Math.cos(inclination)
+          planetGroupRef.current.position.y = Math.sin(angle) * currentDistance * Math.sin(inclination)
+          planetGroupRef.current.position.z = currentDistance * Math.sin(angle) * Math.cos(inclination)
+        } else {
+          // Regular planets - minimal inclination
+          planetGroupRef.current.position.x = currentDistance
+          planetGroupRef.current.position.y = Math.sin(angle) * inclination * 0.5
+        }
         
         // Apply axial tilt
         planetGroupRef.current.rotation.z = axialTilt
@@ -1187,8 +1208,14 @@ function Planet({
           }}
           onPointerLeave={() => onUnhover()}
         >
-          <sphereGeometry args={[radius + 2.4, 8, 8]} />
-          <meshBasicMaterial transparent opacity={0} />
+          <sphereGeometry args={[radius + 2.4, 16, 16]} />
+          <meshBasicMaterial 
+            transparent 
+            opacity={0} 
+            depthWrite={false}
+            depthTest={false}
+            visible={false}
+          />
         </mesh>
         
         {/* Moons */}
@@ -1232,7 +1259,7 @@ function OrbitRing({
       <mesh>
         <ringGeometry args={[distance - 0.1, distance + 0.1, 64]} />
         <meshBasicMaterial 
-          color={hovered ? "#666666" : "#444444"} 
+          color={planetName === 'Pluto' ? (hovered ? "#DD9944" : "#BB8833") : (hovered ? "#666666" : "#444444")} 
           transparent 
           opacity={hovered ? Math.min(orbitOpacity + 0.3, 1) : orbitOpacity}
           side={DoubleSide}
@@ -1261,6 +1288,7 @@ function OrbitRing({
     </group>
   )
 }
+
 
 // Enhanced planet data with realistic orbital mechanics and axial tilts
 const planetData = [
@@ -1377,7 +1405,7 @@ const planetData = [
   { 
     name: 'Pluto', 
     distance: 148, // 39.5 AU scaled visually (enhanced distance from Neptune's 120)
-    radius: 1.2, // Enhanced 3x for visibility (actual would be ~0.4)
+    radius: 0.8, // Same size as Mercury for proper scale
     color: '#C5A572', // Brownish-tan from New Horizons data
     speed: 0.0000024, // 0.0024x Earth's speed (248 year orbit vs 1 year)
     startAngle: 0.6,
@@ -1385,7 +1413,7 @@ const planetData = [
     eccentricity: 0.248, // Real high eccentricity
     axialTilt: 122.53 * Math.PI / 180, // Extreme tilt with retrograde rotation
     moons: [
-      { distance: 2.5, radius: 0.6, color: '#8B8680', speed: 0.00096, startAngle: 0 } // Charon - large relative to Pluto
+      { distance: 2.5, radius: 0.15, color: '#8B8680', speed: 0.034, startAngle: 0 } // Charon - same size as Earth's Moon for visibility
     ]
   },
 ]
@@ -1688,8 +1716,8 @@ function CameraSystem({
 function SolarSystemEnhanced() {
   const [timeScale, setTimeScale] = useState(100)
   const [showSun, setShowSun] = useState(true)
-  const [showOrbits, setShowOrbits] = useState(true)
   const [showPluto, setShowPluto] = useState(true)
+  const [showOrbits, setShowOrbits] = useState(true)
   const [orbitOpacity, setOrbitOpacity] = useState(0.5) // Default 50% opacity
   const [showMoons, setShowMoons] = useState(true)
   const [showAsteroidBelt, setShowAsteroidBelt] = useState(true)
@@ -2708,8 +2736,6 @@ function SolarSystemEnhanced() {
             <div className="flex flex-col items-center">
               <div 
                 onClick={() => setShowPluto(!showPluto)}
-                onMouseEnter={() => setHoveredObject(celestialInfo["Pluto"])}
-                onMouseLeave={() => setHoveredObject(null)}
                 className={`w-12 h-6 rounded-full border cursor-pointer transition-all duration-300 relative ${
                   showPluto 
                     ? 'bg-gray-800/40 border-cyan-400/60' 
@@ -3138,7 +3164,7 @@ function SolarSystemEnhanced() {
       )}
 
       {/* 3D Canvas */}
-      <Canvas camera={{ position: [0, 25, 35], fov: 60 }}>
+      <Canvas camera={{ position: [0, 25, 35], fov: 60 }} style={{ zIndex: 1 }}>
         <CameraSystem 
           automaticMode={cameraAnimation} 
           speed={cameraSpeed} 
@@ -3178,8 +3204,8 @@ function SolarSystemEnhanced() {
 
           {showSun && <Sun onHover={handleObjectHover} onUnhover={handleObjectUnhover} />}
           
-          {/* Orbit rings */}
-          {showOrbits && planetData.map((planet) => (
+          {/* Regular planet orbit rings (excluding Pluto) */}
+          {showOrbits && planetData.filter(planet => planet.name !== 'Pluto').map((planet) => (
             <OrbitRing 
               key={`${planet.name}-orbit`} 
               distance={planet.distance}
@@ -3189,7 +3215,7 @@ function SolarSystemEnhanced() {
               orbitOpacity={orbitOpacity}
             />
           ))}
-          
+
           {/* Regular planets with moons (excluding Pluto) */}
           {showPlanets && planetData.filter(planet => planet.name !== 'Pluto').map((planet) => (
             <Planet 
@@ -3210,7 +3236,7 @@ function SolarSystemEnhanced() {
             />
           ))}
 
-          {/* Pluto with Charon (separate control) */}
+          {/* Pluto (controlled by PLUTO toggle) */}
           {showPluto && planetData.filter(planet => planet.name === 'Pluto').map((planet) => (
             <Planet 
               key={planet.name}
@@ -3229,6 +3255,7 @@ function SolarSystemEnhanced() {
               axialTilt={planet.axialTilt}
             />
           ))}
+
           
           {/* Saturn's Rings */}
           {showPlanets && saturnData && (
