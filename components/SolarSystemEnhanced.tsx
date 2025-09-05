@@ -605,9 +605,7 @@ function Moon({
   color, 
   speed,
   startAngle,
-  name,
-  onHover,
-  onUnhover
+  name
 }: {
   distance: number
   radius: number
@@ -615,8 +613,6 @@ function Moon({
   speed: number
   startAngle: number
   name: string
-  onHover: (info: any) => void
-  onUnhover: () => void
 }) {
   const groupRef = useRef<Group>(null)
 
@@ -632,12 +628,6 @@ function Moon({
     <group ref={groupRef}>
       <mesh 
         position={[distance, 0, 0]}
-        onPointerEnter={(e) => {
-          e.stopPropagation()
-          const info = celestialInfo[name as keyof typeof celestialInfo]
-          if (info) onHover(info)
-        }}
-        onPointerLeave={() => onUnhover()}
       >
         <sphereGeometry args={[radius, 8, 8]} />
         <meshStandardMaterial 
@@ -1114,8 +1104,6 @@ function EnhancedEarth({
             speed={moon.speed * timeScale}
             startAngle={moon.startAngle}
             name={`${name}-Moon-${index}`}
-            onHover={onHover}
-            onUnhover={onUnhover}
           />
         ))}
       </group>
@@ -1323,8 +1311,6 @@ function Planet({
             speed={moon.speed * timeScale}
             startAngle={moon.startAngle}
             name={`${name}-Moon-${index}`}
-            onHover={onHover}
-            onUnhover={onUnhover}
           />
         ))}
       </group>
