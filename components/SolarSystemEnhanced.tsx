@@ -1324,12 +1324,14 @@ function OrbitRing({
   planetName,
   onHover,
   onUnhover,
+  onContextMenu,
   orbitOpacity = 0.5 
 }: { 
   distance: number,
   planetName?: string,
   onHover?: (info: any) => void,
   onUnhover?: () => void,
+  onContextMenu?: (planetName: string, position: { x: number, y: number }) => void,
   orbitOpacity?: number
 }) {
   const [hovered, setHovered] = useState(false)
@@ -1356,6 +1358,12 @@ function OrbitRing({
         onPointerLeave={() => {
           setHovered(false)
           // Visual effect only - no tooltip
+        }}
+        onPointerDown={(e) => {
+          e.stopPropagation() // CRITICAL: Prevent all clicks from affecting camera mode
+          if (e.button === 2 && onContextMenu && planetName) { // Right click
+            onContextMenu(planetName, { x: e.clientX, y: e.clientY })
+          }
         }}
       >
         <ringGeometry args={[distance - 2, distance + 2, 64]} />
@@ -3374,6 +3382,9 @@ function SolarSystemEnhanced() {
               key={`${planet.name}-orbit`} 
               distance={planet.distance}
               planetName={planet.name}
+              onContextMenu={(planetName, position) => {
+                setContextMenu({ planetName, position, visible: true })
+              }}
               orbitOpacity={orbitOpacity}
             />
           ))}
