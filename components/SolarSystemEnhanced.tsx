@@ -643,40 +643,7 @@ function Moon({
   )
 }
 
-// Saturn's Rings - rotates with Saturn and follows its orbital mechanics
-function SaturnRings({ planet, timeScale }: { 
-  planet: any
-  timeScale: number
-}) {
-  const groupRef = useRef<Group>(null)
-  const ringsGroupRef = useRef<Group>(null)
-
-  useFrame((state) => {
-    if (groupRef.current && ringsGroupRef.current) {
-      const angle = planet.startAngle + (state.clock.elapsedTime * planet.speed * timeScale)
-      
-      // Apply same orbital mechanics as Saturn
-      const currentDistance = planet.distance * (1 - planet.eccentricity * Math.cos(angle))
-      
-      groupRef.current.rotation.y = angle
-      
-      ringsGroupRef.current.position.x = currentDistance
-      ringsGroupRef.current.position.y = Math.sin(angle) * planet.inclination * 5
-      ringsGroupRef.current.rotation.z = planet.axialTilt
-    }
-  })
-
-  return (
-    <group ref={groupRef} rotation={[planet.inclination * Math.PI / 180, 0, 0]}>
-      <group ref={ringsGroupRef}>
-        <mesh rotation={[-Math.PI / 2, 0, 0]}>
-          <ringGeometry args={[2.8, 4.2, 32]} />
-          <meshBasicMaterial color="#D4AF37" side={DoubleSide} />
-        </mesh>
-      </group>
-    </group>
-  )
-}
+// Saturn's Rings are now embedded directly in the Planet component for perfect alignment
 
 // Enhanced Earth with day/night, clouds, and realistic features
 function EnhancedEarth({ 
@@ -1224,6 +1191,19 @@ function Planet({
           />
         </mesh>
         
+        {/* Saturn's Rings - embedded directly for perfect alignment */}
+        {name === 'Saturn' && (
+          <mesh rotation={[-Math.PI / 2, 0, 0]}>
+            <ringGeometry args={[3.4, 4.8, 32]} />
+            <meshBasicMaterial 
+              color="#D4AF37" 
+              side={DoubleSide}
+              transparent
+              opacity={0.70}
+            />
+          </mesh>
+        )}
+        
         {/* Moons */}
         {moons && moons.map((moon, index) => (
           <Moon
@@ -1742,14 +1722,16 @@ function SolarSystemEnhanced() {
   const [showInstructions, setShowInstructions] = useState(false)
   const [controlsHovered, setControlsHovered] = useState(false)
   
-  // Intro overlay state
-  const [showIntroOverlay, setShowIntroOverlay] = useState(() => {
-    // Check localStorage to see if user chose "Don't show this again"
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('spaceout-intro-hidden') !== 'true'
-    }
-    return true
-  })
+  // Intro overlay state - prevent flash by checking localStorage first
+  const [showIntroOverlay, setShowIntroOverlay] = useState(false)
+  const [introChecked, setIntroChecked] = useState(false)
+  
+  // Check localStorage after component mounts to avoid hydration mismatch
+  useEffect(() => {
+    const shouldShow = localStorage.getItem('spaceout-intro-hidden') !== 'true'
+    setShowIntroOverlay(shouldShow)
+    setIntroChecked(true)
+  }, [])
   
   
   
@@ -2177,6 +2159,22 @@ function SolarSystemEnhanced() {
 
                   <div className="text-xs text-gray-400 mt-3">
                     Note: Arrow keys in Automatic Mode will switch to Manual Mode
+                  </div>
+                  
+                  {/* Show Welcome Button */}
+                  <div className="mt-4 pt-3 border-t border-cyan-500/20">
+                    <button
+                      onClick={() => {
+                        setShowIntroOverlay(true)
+                        setIntroChecked(true)
+                      }}
+                      className="w-full bg-cyan-600/20 hover:bg-cyan-600/30 border border-cyan-500/40 hover:border-cyan-400/60 rounded-lg px-3 py-2 text-xs text-cyan-300 hover:text-cyan-200 transition-all duration-200 font-medium tracking-wide"
+                      style={{
+                        textShadow: '0 0 10px rgba(6, 182, 212, 0.3)'
+                      }}
+                    >
+                      Show 'Welcome' splash screen
+                    </button>
                   </div>
                 </div>
               </div>
@@ -3263,13 +3261,7 @@ function SolarSystemEnhanced() {
           ))}
 
           
-          {/* Saturn's Rings */}
-          {showPlanets && (
-            <SaturnRings 
-              planet={planetData.find(p => p.name === 'Saturn')}
-              timeScale={timeScale}
-            />
-          )}
+          {/* Saturn's Rings - now embedded directly in Planet component for perfect alignment */}
           
           {/* Asteroid Belt */}
           <AsteroidBelt 
@@ -3304,15 +3296,17 @@ function SolarSystemEnhanced() {
         onComplete={handleMilkyWayEasterEggComplete}
       />
       
-      {/* Intro Overlay */}
-      <IntroOverlay
-        isVisible={showIntroOverlay}
-        onClose={() => {
-          setShowIntroOverlay(false)
-          // Ensure camera starts in automatic mode
-          setCameraAnimation(true)
-        }}
-      />
+      {/* Intro Overlay - only render after localStorage check */}
+      {introChecked && (
+        <IntroOverlay
+          isVisible={showIntroOverlay}
+          onClose={() => {
+            setShowIntroOverlay(false)
+            // Ensure camera starts in automatic mode
+            setCameraAnimation(true)
+          }}
+        />
+      )}
       
     </div>
   )

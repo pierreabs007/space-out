@@ -11,6 +11,14 @@ export default function IntroOverlay({ isVisible, onClose }: IntroOverlayProps) 
   const [dontShowAgain, setDontShowAgain] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
 
+  // When overlay becomes visible, check current localStorage state for checkbox
+  useEffect(() => {
+    if (isVisible) {
+      const currentSetting = localStorage.getItem('spaceout-intro-hidden') === 'true'
+      setDontShowAgain(currentSetting)
+    }
+  }, [isVisible])
+
   // Handle escape key
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -29,6 +37,9 @@ export default function IntroOverlay({ isVisible, onClose }: IntroOverlayProps) 
     setTimeout(() => {
       if (dontShowAgain) {
         localStorage.setItem('spaceout-intro-hidden', 'true')
+      } else {
+        // User unchecked "Don't show again" - remove the setting so overlay shows on next visit
+        localStorage.removeItem('spaceout-intro-hidden')
       }
       onClose()
       setIsClosing(false) // Reset for next time
