@@ -650,12 +650,14 @@ function PlanetContextMenu({
   position, 
   visible, 
   onExplore,
+  onFollow,
   onClose 
 }: { 
   planetName: string,
   position: { x: number, y: number },
   visible: boolean,
   onExplore: () => void,
+  onFollow: () => void,
   onClose: () => void
 }) {
   if (!visible) return null
@@ -670,7 +672,7 @@ function PlanetContextMenu({
   const handleFollow = (e: React.MouseEvent) => {
     e.stopPropagation() // CRITICAL: Prevent camera mode switching
     e.preventDefault() // Additional protection
-    console.log(`🎯 Follow ${planetName} - Not implemented yet`)
+    onFollow()
     onClose()
   }
 
@@ -1586,7 +1588,7 @@ function KuiperBelt({
   )
 }
 
-// SIMPLE Two-Mode System: Automatic vs Manual
+// SIMPLE Two-Mode System: Automatic vs Manual with Planet Following
 function CameraSystem({ 
   automaticMode, 
   speed, 
@@ -1603,7 +1605,9 @@ function CameraSystem({
   setFrozenCameraPosition,
   onMilkyWayEasterEggTrigger,
   milkyWayEasterEggActive,
-  milkyWayEasterEggCooldown
+  milkyWayEasterEggCooldown,
+  cameraTarget,
+  getPlanetPosition
 }: { 
   automaticMode: boolean, 
   speed: number,
@@ -1620,7 +1624,9 @@ function CameraSystem({
   setFrozenCameraPosition: (pos: {x: number, y: number, z: number} | null) => void,
   onMilkyWayEasterEggTrigger: () => void,
   milkyWayEasterEggActive: boolean,
-  milkyWayEasterEggCooldown: boolean
+  milkyWayEasterEggCooldown: boolean,
+  cameraTarget: string,
+  getPlanetPosition: (planetName: string) => {x: number, y: number, z: number}
 }) {
   const { camera } = useThree()
   const orbitControlsRef = useRef<any>(null)
@@ -1656,19 +1662,28 @@ function CameraSystem({
   }, [])
   
   useFrame((state) => {
+    // Get current target position
+    const targetPosition = getPlanetPosition(cameraTarget)
+    
+    // Update OrbitControls to follow current target
+    if (orbitControlsRef.current) {
+      orbitControlsRef.current.target.set(targetPosition.x, targetPosition.y, targetPosition.z)
+      orbitControlsRef.current.update()
+    }
+    
     // Check if camera should be frozen for Easter egg
     if (cameraFrozen && frozenCameraPosition) {
       camera.position.set(frozenCameraPosition.x, frozenCameraPosition.y, frozenCameraPosition.z)
-      camera.lookAt(0, 0, 0)
+      camera.lookAt(targetPosition.x, targetPosition.y, targetPosition.z)
       return // Skip normal camera movement
     }
     
-    // Check for maximum zoom-out trigger (only in manual mode)
+    // Check for maximum zoom-out trigger (only in manual mode, relative to current target)
     if (!automaticMode && !milkyWayEasterEggActive && !milkyWayEasterEggCooldown && !easterEggActive) {
-      const cameraDistance = camera.position.distanceTo(new Vector3(0, 0, 0))
+      const cameraDistance = camera.position.distanceTo(new Vector3(targetPosition.x, targetPosition.y, targetPosition.z))
       const maxDistance = 3800 // Near the maximum zoom limit (4000)
       
-      if (cameraDistance >= maxDistance) {
+      if (cameraDistance >= maxDistance && cameraTarget === 'Sun') {
         console.log('🌌 Maximum zoom detected - triggering Milky Way Easter Egg')
         onMilkyWayEasterEggTrigger()
         return // Skip normal camera movement
@@ -1676,14 +1691,14 @@ function CameraSystem({
     }
     
     if (automaticMode) {
-      // AUTOMATIC MODE: Camera moves, no manual controls
+      // AUTOMATIC MODE: Camera orbits around current target (Sun or Planet)
       const time = state.clock.elapsedTime * speed
-      const radius = 120  // Much closer - just outside Uranus orbit (100 units)
+      const radius = cameraTarget === 'Sun' ? 120 : 25  // Closer orbit for planets
+      
       // Use user-controlled vertical movement range
       const verticalTime = state.clock.elapsedTime * speed * 3.0 // 3x faster vertical movement
       
-      // Convert angle degrees to height values
-      // Map -90° to 90° range to actual height values
+      // Convert angle degrees to height values relative to target
       const minHeight = radius * Math.sin((verticalMin * Math.PI) / 180)
       const maxHeight = radius * Math.sin((verticalMax * Math.PI) / 180)
       const centerHeight = (minHeight + maxHeight) / 2
@@ -1691,11 +1706,12 @@ function CameraSystem({
       
       const height = centerHeight + Math.sin(verticalTime) * heightRange
       
-      const x = Math.cos(time) * radius
-      const z = Math.sin(time) * radius
+      const x = targetPosition.x + Math.cos(time) * radius
+      const z = targetPosition.z + Math.sin(time) * radius
+      const y = targetPosition.y + height
       
-      camera.position.set(x, height, z)
-      camera.lookAt(0, 0, 0)
+      camera.position.set(x, y, z)
+      camera.lookAt(targetPosition.x, targetPosition.y, targetPosition.z)
     } else {
       // MANUAL MODE: Handle keyboard controls + OrbitControls
       const moveSpeed = 2 // Units per frame when key is held
@@ -1839,6 +1855,10 @@ function SolarSystemEnhanced() {
   // Context menu state for glassmorphic right-click menus
   const [contextMenu, setContextMenu] = useState<{planetName: string, position: {x: number, y: number}, visible: boolean} | null>(null)
   const [preventCameraSwitch, setPreventCameraSwitch] = useState(false)
+
+  // Planet-centric camera state for "Follow" functionality
+  const [cameraTarget, setCameraTarget] = useState('Sun')
+  const [isTransitioning, setIsTransitioning] = useState(false)
   
   
   
@@ -2057,6 +2077,33 @@ function SolarSystemEnhanced() {
     }
     // Reset prevention after a brief delay
     setTimeout(() => setPreventCameraSwitch(false), 100)
+  }
+
+  // Get real-time planet positions
+  const getPlanetPosition = (planetName: string) => {
+    if (planetName === 'Sun') return { x: 0, y: 0, z: 0 }
+    
+    const planet = planetData.find(p => p.name === planetName)
+    if (!planet) return { x: 0, y: 0, z: 0 }
+    
+    const currentTime = Date.now() * 0.001
+    const angle = planet.startAngle + (currentTime * planet.speed * timeScale * 0.001)
+    const distance = planet.distance
+    
+    return {
+      x: distance * Math.cos(angle),
+      y: 0,
+      z: distance * Math.sin(angle)
+    }
+  }
+
+  // Follow functionality - chase camera system
+  const followPlanet = (planetName: string) => {
+    console.log(`🎯 Following ${planetName}`)
+    setCameraTarget(planetName)
+    setIsTransitioning(true)
+    // Reset transition state after camera moves
+    setTimeout(() => setIsTransitioning(false), 2000)
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -3348,6 +3395,8 @@ function SolarSystemEnhanced() {
           onMilkyWayEasterEggTrigger={handleMilkyWayEasterEggTrigger}
           milkyWayEasterEggActive={milkyWayEasterEggActive}
           milkyWayEasterEggCooldown={milkyWayEasterEggCooldown}
+          cameraTarget={cameraTarget}
+          getPlanetPosition={getPlanetPosition}
         />
         
 
@@ -3484,8 +3533,19 @@ function SolarSystemEnhanced() {
         position={contextMenu?.position || { x: 0, y: 0 }}
         visible={contextMenu?.visible || false}
         onExplore={() => explorePlanet(contextMenu?.planetName || '')}
+        onFollow={() => followPlanet(contextMenu?.planetName || '')}
         onClose={() => setContextMenu(null)}
       />
+      
+      {/* Camera Transition Indicator */}
+      {isTransitioning && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
+          <div className="bg-gray-900/95 backdrop-blur-sm border border-cyan-500/50 rounded-lg px-6 py-4 text-white text-center">
+            <div className="text-cyan-300 font-semibold mb-2">🎯 Following {cameraTarget}</div>
+            <div className="text-sm text-gray-300">Camera transitioning to chase mode...</div>
+          </div>
+        </div>
+      )}
       
     </div>
   )
