@@ -1662,8 +1662,8 @@ function CameraSystem({
   }, [])
   
   useFrame((state) => {
-    // Get current target position
-    const targetPosition = getPlanetPosition(cameraTarget)
+    // Get current target position using the same time as planet rendering
+    const targetPosition = getPlanetPosition(cameraTarget, state.clock.elapsedTime)
     
     // Update OrbitControls to follow current target
     if (orbitControlsRef.current) {
@@ -1693,7 +1693,7 @@ function CameraSystem({
     if (automaticMode) {
       // AUTOMATIC MODE: Camera orbits around current target (Sun or Planet)
       const time = state.clock.elapsedTime * speed
-      const radius = cameraTarget === 'Sun' ? 120 : 40  // Closer but not too close for planets
+      const radius = cameraTarget === 'Sun' ? 120 : 80  // Further back to ensure planet visibility
       
       // Use user-controlled vertical movement range
       const verticalTime = state.clock.elapsedTime * speed * 3.0 // 3x faster vertical movement
@@ -2078,22 +2078,25 @@ function SolarSystemEnhanced() {
     setTimeout(() => setPreventCameraSwitch(false), 100)
   }
 
-  // Get real-time planet positions
-  const getPlanetPosition = (planetName: string) => {
+  // Get real-time planet positions using EXACT same calculation as Planet components
+  const getPlanetPosition = (planetName: string, currentTime?: number) => {
     if (planetName === 'Sun') return { x: 0, y: 0, z: 0 }
     
     const planet = planetData.find(p => p.name === planetName)
     if (!planet) return { x: 0, y: 0, z: 0 }
     
-    // Use exact same timing system as the actual planet rendering for perfect sync
-    const currentTime = Date.now() * 0.001
-    const angle = planet.startAngle + (currentTime * planet.speed * timeScale * 0.001)
-    const distance = planet.distance
+    // Match EXACTLY what Planet component useFrame does
+    const time = currentTime || Date.now() * 0.001
+    const planetSpeed = planet.speed * timeScale // This is what gets passed to Planet
+    const angle = planet.startAngle + (time * planetSpeed)
+    const currentDistance = planet.distance * (1 - (planet.eccentricity || 0) * Math.cos(angle))
     
+    // Planets use rotation.y for orbital motion, so we need to calculate actual world position
+    // groupRef.current.rotation.y = angle, planetGroupRef.current.position.x = currentDistance
     return {
-      x: distance * Math.cos(angle),
-      y: 0,
-      z: distance * Math.sin(angle)
+      x: currentDistance * Math.cos(angle),
+      y: Math.sin(angle) * (planet.inclination || 0) * 0.5,
+      z: currentDistance * Math.sin(angle)
     }
   }
 
