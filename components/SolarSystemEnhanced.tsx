@@ -1693,7 +1693,7 @@ function CameraSystem({
     if (automaticMode) {
       // AUTOMATIC MODE: Camera orbits around current target (Sun or Planet)
       const time = state.clock.elapsedTime * speed
-      const radius = cameraTarget === 'Sun' ? 120 : 25  // Closer orbit for planets
+      const radius = cameraTarget === 'Sun' ? 120 : 40  // Closer but not too close for planets
       
       // Use user-controlled vertical movement range
       const verticalTime = state.clock.elapsedTime * speed * 3.0 // 3x faster vertical movement
@@ -1858,7 +1858,6 @@ function SolarSystemEnhanced() {
 
   // Planet-centric camera state for "Follow" functionality
   const [cameraTarget, setCameraTarget] = useState('Sun')
-  const [isTransitioning, setIsTransitioning] = useState(false)
   
   
   
@@ -2086,6 +2085,7 @@ function SolarSystemEnhanced() {
     const planet = planetData.find(p => p.name === planetName)
     if (!planet) return { x: 0, y: 0, z: 0 }
     
+    // Use exact same timing system as the actual planet rendering for perfect sync
     const currentTime = Date.now() * 0.001
     const angle = planet.startAngle + (currentTime * planet.speed * timeScale * 0.001)
     const distance = planet.distance
@@ -2101,9 +2101,11 @@ function SolarSystemEnhanced() {
   const followPlanet = (planetName: string) => {
     console.log(`🎯 Following ${planetName}`)
     setCameraTarget(planetName)
-    setIsTransitioning(true)
-    // Reset transition state after camera moves
-    setTimeout(() => setIsTransitioning(false), 2000)
+    
+    // Force camera to automatic mode for smooth following
+    if (!cameraAnimation) {
+      setCameraAnimation(true)
+    }
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -3536,16 +3538,6 @@ function SolarSystemEnhanced() {
         onFollow={() => followPlanet(contextMenu?.planetName || '')}
         onClose={() => setContextMenu(null)}
       />
-      
-      {/* Camera Transition Indicator */}
-      {isTransitioning && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50">
-          <div className="bg-gray-900/95 backdrop-blur-sm border border-cyan-500/50 rounded-lg px-6 py-4 text-white text-center">
-            <div className="text-cyan-300 font-semibold mb-2">🎯 Following {cameraTarget}</div>
-            <div className="text-sm text-gray-300">Camera transitioning to chase mode...</div>
-          </div>
-        </div>
-      )}
       
     </div>
   )
